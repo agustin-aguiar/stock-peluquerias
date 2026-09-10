@@ -5,6 +5,7 @@ import { LoginPage } from '@/features/auth/LoginPage'
 import { RecuperarPage } from '@/features/auth/RecuperarPage'
 import { RestablecerPage } from '@/features/auth/RestablecerPage'
 import { SinPerfilPage } from '@/features/auth/SinPerfilPage'
+import { SucursalesPage } from '@/features/branches/SucursalesPage'
 import { HomeRedirect } from '@/features/home/HomeRedirect'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
@@ -34,7 +35,7 @@ export const router = createBrowserRouter([
                   { path: 'catalogo', element: <PlaceholderPage title="Catálogo" /> },
                   { path: 'catalogo/nuevo', element: <PlaceholderPage title="Nuevo producto" /> },
                   { path: 'catalogo/:productId', element: <PlaceholderPage title="Producto" /> },
-                  { path: 'sucursales', element: <PlaceholderPage title="Sucursales" /> },
+                  { path: 'sucursales', element: <SucursalesPage /> },
                   { path: 'usuarios', element: <PlaceholderPage title="Usuarios" /> },
                 ],
               },
