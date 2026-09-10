@@ -7,6 +7,8 @@ import { RestablecerPage } from '@/features/auth/RestablecerPage'
 import { SinPerfilPage } from '@/features/auth/SinPerfilPage'
 import { SucursalesPage } from '@/features/branches/SucursalesPage'
 import { HomeRedirect } from '@/features/home/HomeRedirect'
+import { CatalogoPage } from '@/features/products/CatalogoPage'
+import { ProductoFormPage } from '@/features/products/ProductoFormPage'
 import { UsuariosPage } from '@/features/users/UsuariosPage'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
@@ -33,9 +35,9 @@ export const router = createBrowserRouter([
                 element: <RequireRole role="admin" />,
                 children: [
                   { path: 'inicio', element: <PlaceholderPage title="Inicio" /> },
-                  { path: 'catalogo', element: <PlaceholderPage title="Catálogo" /> },
-                  { path: 'catalogo/nuevo', element: <PlaceholderPage title="Nuevo producto" /> },
-                  { path: 'catalogo/:productId', element: <PlaceholderPage title="Producto" /> },
+                  { path: 'catalogo', element: <CatalogoPage /> },
+                  { path: 'catalogo/nuevo', element: <ProductoFormPage /> },
+                  { path: 'catalogo/:productId', element: <ProductoFormPage /> },
                   { path: 'sucursales', element: <SucursalesPage /> },
                   { path: 'usuarios', element: <UsuariosPage /> },
                 ],
