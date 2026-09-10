@@ -769,7 +769,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - Create: `supabase/config.toml` (vía `supabase init`), `supabase/migrations/0001_schema.sql`, `supabase/seed.sql` (versión mínima; se completa en la Tarea 16)
 
 **Interfaces:**
-- Produces: tipos `user_role`, `unit_kind`, `operation_type`, `transfer_status`, `alert_status`; tablas `chains`, `branches`, `profiles`, `products`, `inventory`, `operations`, `transfers`, `movements`, `alerts`, `audit_events`; trigger `on_auth_user_created` → `public.handle_new_auth_user()`. IDs fijos del seed: cadena `11111111-1111-4111-8111-111111111111`, Centro `22222222-2222-4222-8222-222222222201`, Pocitos `22222222-2222-4222-8222-222222222202`, admin `33333333-3333-4333-8333-333333333301`, operador Centro `…302`, operador Pocitos `…303`. Emails demo: `admin@example.com`, `centro@example.com`, `pocitos@example.com`.
+- Produces: tipos `user_role`, `unit_kind`, `operation_type`, `transfer_status`, `alert_status`; tablas `chains`, `branches`, `profiles`, `products`, `inventory`, `operations`, `transfers`, `movements`, `alerts`, `audit_events`; trigger `on_auth_user_created` → `public.handle_new_auth_user()`. IDs fijos del seed: cadena `11111111-1111-4111-8111-111111111111`, Centro `22222222-2222-4222-8222-222222222201`, Pocitos `22222222-2222-4222-8222-222222222202`, admin `33333333-3333-4333-8333-333333333301`, operador Centro `…302`, operador Pocitos `…303`. Emails demo: `admin@pelu.com`, `centro@pelu.com`, `pocitos@pelu.com`.
 
 - [ ] **Paso 1: Verificar prerrequisitos (Tarea 0, Paso 5)**
 
@@ -999,9 +999,9 @@ insert into public.branches (id, chain_id, code, name) values
   ('22222222-2222-4222-8222-222222222202', '11111111-1111-4111-8111-111111111111', 'POC', 'Sucursal Pocitos');
 
 insert into public.profiles (id, chain_id, email, full_name, role, branch_id) values
-  ('33333333-3333-4333-8333-333333333301', '11111111-1111-4111-8111-111111111111', 'admin@example.com',   'Valeria Méndez', 'admin',    null),
-  ('33333333-3333-4333-8333-333333333302', '11111111-1111-4111-8111-111111111111', 'centro@example.com',  'Sofía Varela',   'operator', '22222222-2222-4222-8222-222222222201'),
-  ('33333333-3333-4333-8333-333333333303', '11111111-1111-4111-8111-111111111111', 'pocitos@example.com', 'Esteban Rossi',  'operator', '22222222-2222-4222-8222-222222222202');
+  ('33333333-3333-4333-8333-333333333301', '11111111-1111-4111-8111-111111111111', 'admin@pelu.com',   'Valeria Méndez', 'admin',    null),
+  ('33333333-3333-4333-8333-333333333302', '11111111-1111-4111-8111-111111111111', 'centro@pelu.com',  'Sofía Varela',   'operator', '22222222-2222-4222-8222-222222222201'),
+  ('33333333-3333-4333-8333-333333333303', '11111111-1111-4111-8111-111111111111', 'pocitos@pelu.com', 'Esteban Rossi',  'operator', '22222222-2222-4222-8222-222222222202');
 
 -- Re-vincular cuentas Auth existentes (tras un re-seed los perfiles se recrean).
 update public.profiles p
@@ -1028,7 +1028,7 @@ Expected: `CEN | Sucursal Centro`, `POC | Sucursal Pocitos`.
 
 - [ ] **Paso 7 (usuario): crear las tres cuentas demo**
 
-Dashboard → Authentication → Users → **Add user** → Create new user: email `admin@example.com`, contraseña elegida por el usuario, **Auto Confirm User** activado. Repetir para `centro@example.com` y `pocitos@example.com`. El trigger vincula cada cuenta con su perfil.
+Dashboard → Authentication → Users → **Add user** → Create new user: email `admin@pelu.com`, contraseña elegida por el usuario, **Auto Confirm User** activado. Repetir para `centro@pelu.com` y `pocitos@pelu.com`. El trigger vincula cada cuenta con su perfil.
 
 - [ ] **Paso 8: Verificar vinculación**
 
@@ -3763,10 +3763,10 @@ Expected: build OK.
 Run: `npm run dev` (dejar corriendo) y abrir `http://localhost:5173`.
 
 1. Sin sesión, `/` redirige a `/login`.
-2. Ingresar con `admin@example.com` → redirige a `/inicio` (placeholder). El rail muestra Inicio, Inventario, Catálogo, Sucursales, Usuarios. El pill muestra "Todas las sucursales" con selector.
+2. Ingresar con `admin@pelu.com` → redirige a `/inicio` (placeholder). El rail muestra Inicio, Inventario, Catálogo, Sucursales, Usuarios. El pill muestra "Todas las sucursales" con selector.
 3. Cambiar el selector a "Sucursal Centro", recargar: sigue en Centro.
 4. "Salir" → `/login` sin aviso de sesión vencida.
-5. Ingresar con `centro@example.com` → `/inventario`. Solo aparece Inventario. El pill muestra "Sucursal Centro" sin selector. Navegar a `/catalogo` → `/403`.
+5. Ingresar con `centro@pelu.com` → `/inventario`. Solo aparece Inventario. El pill muestra "Sucursal Centro" sin selector. Navegar a `/catalogo` → `/403`.
 6. En DevTools → Network → Offline: aparece el banner y el botón "Ingresar" del login queda deshabilitado.
 7. En ancho 360 px: bottom nav visible, header sin nombre completo.
 
@@ -4117,7 +4117,7 @@ describe('profileSchema', () => {
     const r = profileSchema.safeParse({ email: ' Admin@Example.com ', full_name: 'Ana', role: 'admin', branch_id: '' })
     expect(r.success).toBe(true)
     if (r.success) {
-      expect(r.data.email).toBe('admin@example.com')
+      expect(r.data.email).toBe('admin@pelu.com')
       expect(r.data.branch_id).toBeNull()
     }
   })
@@ -5721,7 +5721,7 @@ Manual:
 1. Admin, pill "Sucursal Centro": `/inventario` lista SH-PRO-NEUTRO con "Sin saldo inicial". Entrar al detalle → "Registrar saldo inicial" → modo envases `2` → vista previa "2 envases × 1.000,00 ml = 2.000,00 ml" → confirmar → toast, saldo 2.000,00 ml, chip OK (mínimo 1.980). El botón desaparece.
 2. Volver a `/catalogo/<id>`: el selector de unidad ahora está bloqueado.
 3. Admin, pill "Todas las sucursales": tabla comparativa con columna Centro y Pocitos; Pocitos muestra "—" (no habilitado).
-4. Operador Centro (`centro@example.com`): `/inventario` muestra solo Centro; el detalle no tiene botón de saldo inicial; `/inventario/<id-de-otro-producto-no-habilitado>` muestra "no está habilitado en tu sucursal".
+4. Operador Centro (`centro@pelu.com`): `/inventario` muestra solo Centro; el detalle no tiene botón de saldo inicial; `/inventario/<id-de-otro-producto-no-habilitado>` muestra "no está habilitado en tu sucursal".
 5. Con DevTools Offline, abrir el diálogo: "Confirmar" deshabilitado.
 
 - [ ] **Paso 8: Commit**
@@ -5933,9 +5933,9 @@ insert into public.branches (id, chain_id, code, name) values
   ('22222222-2222-4222-8222-222222222202', '11111111-1111-4111-8111-111111111111', 'POC', 'Sucursal Pocitos');
 
 insert into public.profiles (id, chain_id, email, full_name, role, branch_id) values
-  ('33333333-3333-4333-8333-333333333301', '11111111-1111-4111-8111-111111111111', 'admin@example.com',   'Valeria Méndez', 'admin',    null),
-  ('33333333-3333-4333-8333-333333333302', '11111111-1111-4111-8111-111111111111', 'centro@example.com',  'Sofía Varela',   'operator', '22222222-2222-4222-8222-222222222201'),
-  ('33333333-3333-4333-8333-333333333303', '11111111-1111-4111-8111-111111111111', 'pocitos@example.com', 'Esteban Rossi',  'operator', '22222222-2222-4222-8222-222222222202');
+  ('33333333-3333-4333-8333-333333333301', '11111111-1111-4111-8111-111111111111', 'admin@pelu.com',   'Valeria Méndez', 'admin',    null),
+  ('33333333-3333-4333-8333-333333333302', '11111111-1111-4111-8111-111111111111', 'centro@pelu.com',  'Sofía Varela',   'operator', '22222222-2222-4222-8222-222222222201'),
+  ('33333333-3333-4333-8333-333333333303', '11111111-1111-4111-8111-111111111111', 'pocitos@pelu.com', 'Esteban Rossi',  'operator', '22222222-2222-4222-8222-222222222202');
 
 -- Catálogo + mínimos y saldos por sucursal (min_cen, bal_cen, min_poc, bal_poc) en unidad base.
 create temp table seed_products (
@@ -6105,7 +6105,7 @@ cp .env.example .env.local        # completar con URL y anon key del proyecto
 
 ## Usuarios demo
 
-Perfiles del seed: `admin@example.com` (administrador), `centro@example.com` y `pocitos@example.com` (operadores). Las contraseñas se definen al crear las cuentas en Supabase (ver `docs/operacion.md`); no viven en el repositorio.
+Perfiles del seed: `admin@pelu.com` (administrador), `centro@pelu.com` y `pocitos@pelu.com` (operadores). Las contraseñas se definen al crear las cuentas en Supabase (ver `docs/operacion.md`); no viven en el repositorio.
 ```
 
 - [ ] **Paso 4: Escribir `docs/operacion.md`**
@@ -6149,7 +6149,7 @@ Regla: una migración aplicada no se edita; los cambios van en una nueva.
 
 Las cuentas se crean desde el dashboard, nunca por registro público:
 
-1. En la app, el administrador crea el perfil (`/usuarios`) con email, rol y sucursal. Para el primer administrador, el perfil ya viene en el seed (`admin@example.com`).
+1. En la app, el administrador crea el perfil (`/usuarios`) con email, rol y sucursal. Para el primer administrador, el perfil ya viene en el seed (`admin@pelu.com`).
 2. Dashboard → Authentication → Users → Add user → Create new user: mismo email, contraseña, "Auto Confirm User" activado.
 3. El trigger `on_auth_user_created` vincula la cuenta con el perfil. En `/usuarios` desaparece el chip "Sin cuenta".
 
@@ -6267,7 +6267,7 @@ En la terminal del usuario: `vercel login`. Luego en https://vercel.com → Add 
 Run: `vercel --yes`
 Expected: termina con una URL `https://stock-peluquerias-….vercel.app`. Si falla por variables faltantes, completar el Paso 6 y repetir.
 
-Verificar: abrir la URL → `/login`; ingresar con `admin@example.com` → `/inicio` con dos tarjetas (Centro con 0–1 alertas, Pocitos con varias). Recargar en `/inventario` → no da 404 (rewrite SPA).
+Verificar: abrir la URL → `/login`; ingresar con `admin@pelu.com` → `/inicio` con dos tarjetas (Centro con 0–1 alertas, Pocitos con varias). Recargar en `/inventario` → no da 404 (rewrite SPA).
 
 Agregar `https://<url-de-vercel>/auth/restablecer` a Supabase → Authentication → URL Configuration → Redirect URLs (usuario).
 
@@ -6276,12 +6276,12 @@ Agregar `https://<url-de-vercel>/auth/restablecer` a Supabase → Authentication
 Run: `npm test && npm run test:db && npm run typecheck && npm run build`
 Expected: todo en verde.
 
-Recorrido de aceptación (dos ventanas: admin y `centro@example.com`):
+Recorrido de aceptación (dos ventanas: admin y `centro@pelu.com`):
 
 1. Admin compara locales: SH-PRO-NEUTRO muestra 2.000,00 ml en Centro y 3.500,00 ml en Pocitos (RF-05, HU-01).
 2. Operador Centro ve solo Centro; `/catalogo` → 403; no aparece "Registrar saldo inicial" (RF-02).
 3. Admin crea sucursal `NOR`, la habilita para un producto y registra saldo inicial; el operador de Centro no la ve (RF-03, CP-23).
-4. Admin desactiva `pocitos@example.com`; en la ventana del operador de Pocitos la siguiente navegación lleva a "Cuenta sin perfil" (CP-04). Reactivar.
+4. Admin desactiva `pocitos@pelu.com`; en la ventana del operador de Pocitos la siguiente navegación lleva a "Cuenta sin perfil" (CP-04). Reactivar.
 5. Cerrar sesión y volver a entrar: los saldos persisten (CP-21).
 
 - [ ] **Paso 9: Commit**
