@@ -88,10 +88,10 @@ select '11111111-1111-4111-8111-111111111111', sku, name, brand, category, varia
 
 -- Inventario en ambas sucursales, todo inicializado.
 insert into public.inventory (chain_id, branch_id, product_id, balance, min_qty, initialized_at)
-select p.chain_id, '22222222-2222-4222-8222-222222222201', p.id, s.bal_cen, s.min_cen, now()
+select p.chain_id, '22222222-2222-4222-8222-222222222201'::uuid, p.id, s.bal_cen, s.min_cen, now()
   from seed_products s join public.products p on p.chain_id = '11111111-1111-4111-8111-111111111111' and p.sku = s.sku
 union all
-select p.chain_id, '22222222-2222-4222-8222-222222222202', p.id, s.bal_poc, s.min_poc, now()
+select p.chain_id, '22222222-2222-4222-8222-222222222202'::uuid, p.id, s.bal_poc, s.min_poc, now()
   from seed_products s join public.products p on p.chain_id = '11111111-1111-4111-8111-111111111111' and p.sku = s.sku;
 
 -- Una operación de carga inicial por sucursal, con un movimiento por producto con saldo > 0.
@@ -101,8 +101,8 @@ insert into public.operations (id, chain_id, type, actor_profile_id, idempotency
 
 insert into public.movements (chain_id, operation_id, product_id, branch_id, qty_delta, unit)
 select i.chain_id,
-       case i.branch_id when '22222222-2222-4222-8222-222222222201' then '44444444-4444-4444-8444-444444444401'
-                        else '44444444-4444-4444-8444-444444444402' end,
+       case i.branch_id when '22222222-2222-4222-8222-222222222201'::uuid then '44444444-4444-4444-8444-444444444401'::uuid
+                        else '44444444-4444-4444-8444-444444444402'::uuid end,
        i.product_id, i.branch_id, i.balance, p.unit
   from public.inventory i join public.products p on p.id = i.product_id
  where i.chain_id = '11111111-1111-4111-8111-111111111111' and i.balance > 0;
