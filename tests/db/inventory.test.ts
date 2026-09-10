@@ -84,7 +84,6 @@ describe('enable_product_in_branch / set_min_qty', () => {
 
 describe('set_initial_balance', () => {
   it('CP-05/CP-07 rechaza negativo, decimales en unidad y más de dos decimales', async () => {
-    await t.adminUser.client.rpc('enable_product_in_branch', { p_product_id: botellaId, p_branch_id: t.branchA, p_min_qty: 5 })
     expectRpcError(
       await t.adminUser.client.rpc('set_initial_balance', { p_key: randomUUID(), p_branch_id: t.branchA, p_product_id: shampooId, p_qty: -1 }),
       'invalid_quantity',
