@@ -5,6 +5,9 @@ Aplicación web (React + Vite) sobre Supabase (PostgreSQL, Auth, RLS). Las escri
 
 Estado: SP1 (fundación y catálogo). Ver `docs/superpowers/specs/` y `docs/referencia/plan-v1.md`.
 
+- Repositorio: https://github.com/agustin-aguiar/stock-peluquerias
+- Aplicación publicada: https://stock-peluquerias.vercel.app (cada push a `main` despliega automáticamente)
+
 ## Requisitos
 
 - Node.js 22.12 o superior (probado con 24).

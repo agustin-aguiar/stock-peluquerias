@@ -83,6 +83,17 @@ Proyecto actual: `agustin-aguiars-projects/stock-peluquerias`. URL pública: htt
 
 `vercel.json` reescribe todas las rutas a `index.html` (SPA); verificado con `/inventario` respondiendo 200.
 
+### Integración con GitHub
+
+Repositorio: https://github.com/agustin-aguiar/stock-peluquerias (público, rama por defecto `main`), conectado al proyecto de Vercel (Settings → Git). Consecuencias:
+
+- Cada `git push origin main` genera un despliegue de Production sin correr `vercel` a mano.
+- Cada pull request genera una vista previa; para que compile necesita las variables `VITE_*` en el entorno Preview (cargarlas desde el dashboard, paso 3).
+- La app de GitHub de Vercel debe tener acceso al repo (GitHub → Settings → Applications → Vercel → Repository access); si aparece "couldn't be found", falta ese permiso.
+- Para publicar sin pasar por GitHub sigue valiendo `vercel --yes` desde la carpeta enlazada.
+
+Primer push desde Windows: si `git push` responde "Invalid username or token", borrar la credencial guardada con `git credential-manager github logout` y repetir el push; Git Credential Manager abre el navegador para autorizar.
+
 ## 8. Respaldo y restauración
 
 Respaldo lógico del esquema y datos del proyecto enlazado:
