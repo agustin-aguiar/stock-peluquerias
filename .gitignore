@@ -12,3 +12,5 @@ supabase/.branches/
 Thumbs.db
 .claude/
 backups/
+
+.vercel

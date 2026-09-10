@@ -65,12 +65,23 @@ Las pruebas de integración crean usuarios Auth temporales (`*@example.com`) y l
 
 ## 7. Despliegue en Vercel
 
-1. `vercel login` (una vez).
-2. En el dashboard de Vercel → proyecto → Settings → Environment Variables: `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para Preview y Production.
-3. `vercel --yes` publica una vista previa; `vercel --prod --yes` publica producción.
-4. Agregar la URL resultante a Redirect URLs de Supabase (sección 1).
+Proyecto actual: `agustin-aguiars-projects/stock-peluquerias`. URL pública: https://stock-peluquerias.vercel.app
 
-`vercel.json` reescribe todas las rutas a `index.html` (SPA).
+1. `vercel login` (una vez).
+2. Enlazar la carpeta al proyecto (crea `.vercel/`, ignorado por git):
+   ```bash
+   vercel link --yes --scope agustin-aguiars-projects --project stock-peluquerias
+   ```
+3. Variables de entorno (solo la URL y la clave publicable; la `service_role` nunca va a Vercel). Para Production se cargan por CLI leyendo el valor desde `.env.local`:
+   ```bash
+   grep '^VITE_SUPABASE_URL=' .env.local | cut -d= -f2- | tr -d '\r\n' | vercel env add VITE_SUPABASE_URL production
+   grep '^VITE_SUPABASE_ANON_KEY=' .env.local | cut -d= -f2- | tr -d '\r\n' | vercel env add VITE_SUPABASE_ANON_KEY production
+   ```
+   Para Preview la CLI pide elegir rama de forma interactiva; cargarlas desde el dashboard (Settings → Environment Variables → Preview) si se van a usar despliegues de vista previa.
+4. `vercel --yes` publica (con la CLI 51 el destino es Production; `vercel --prod --yes` es equivalente). La URL de cada despliegue (`stock-peluquerias-<hash>-<equipo>.vercel.app`) está protegida por Vercel Authentication y redirige a un login de Vercel: para la demo usar la URL pública del proyecto.
+5. Agregar `https://stock-peluquerias.vercel.app/auth/restablecer` a Redirect URLs de Supabase (sección 1).
+
+`vercel.json` reescribe todas las rutas a `index.html` (SPA); verificado con `/inventario` respondiendo 200.
 
 ## 8. Respaldo y restauración
 
