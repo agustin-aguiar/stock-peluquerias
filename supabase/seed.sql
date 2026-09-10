@@ -12,9 +12,9 @@ insert into public.branches (id, chain_id, code, name) values
   ('22222222-2222-4222-8222-222222222202', '11111111-1111-4111-8111-111111111111', 'POC', 'Sucursal Pocitos');
 
 insert into public.profiles (id, chain_id, email, full_name, role, branch_id) values
-  ('33333333-3333-4333-8333-333333333301', '11111111-1111-4111-8111-111111111111', 'admin@pelu.com',   'Valeria Méndez', 'admin',    null),
-  ('33333333-3333-4333-8333-333333333302', '11111111-1111-4111-8111-111111111111', 'centro@pelu.com',  'Sofía Varela',   'operator', '22222222-2222-4222-8222-222222222201'),
-  ('33333333-3333-4333-8333-333333333303', '11111111-1111-4111-8111-111111111111', 'pocitos@pelu.com', 'Esteban Rossi',  'operator', '22222222-2222-4222-8222-222222222202');
+  ('33333333-3333-4333-8333-333333333301', '11111111-1111-4111-8111-111111111111', 'admin@example.com',   'Valeria Méndez', 'admin',    null),
+  ('33333333-3333-4333-8333-333333333302', '11111111-1111-4111-8111-111111111111', 'centro@example.com',  'Sofía Varela',   'operator', '22222222-2222-4222-8222-222222222201'),
+  ('33333333-3333-4333-8333-333333333303', '11111111-1111-4111-8111-111111111111', 'pocitos@example.com', 'Esteban Rossi',  'operator', '22222222-2222-4222-8222-222222222202');
 
 -- Catálogo + mínimos y saldos por sucursal (min_cen, bal_cen, min_poc, bal_poc) en unidad base.
 create temp table seed_products (

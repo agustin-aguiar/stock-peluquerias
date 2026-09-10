@@ -91,8 +91,14 @@ export async function createTestChain(): Promise<TestChain> {
   const opB = await addUser('operator', branchB, 'opb')
 
   const cleanup = async () => {
-    await admin.from('chains').delete().eq('id', chain.id)
-    for (const u of users) await admin.auth.admin.deleteUser(u.authUserId)
+    const { error } = await admin.from('chains').delete().eq('id', chain.id)
+    if (error) throw error
+    const failures: string[] = []
+    for (const u of users) {
+      const { error: e } = await admin.auth.admin.deleteUser(u.authUserId)
+      if (e) failures.push(`${u.email}: ${e.message}`)
+    }
+    if (failures.length) throw new Error('No se pudieron borrar usuarios de prueba: ' + failures.join('; '))
   }
 
   return { chainId: chain.id, branchA, branchB, adminUser, opA, opB, addUser, cleanup }
@@ -101,5 +107,5 @@ export async function createTestChain(): Promise<TestChain> {
 /** Afirma que una respuesta de supabase-js trae el código RPC esperado. */
 export function expectRpcError(res: { error: { message: string } | null }, code: string) {
   expect(res.error, `esperaba error ${code} y no hubo error`).not.toBeNull()
-  expect(res.error!.message).toBe(code)
+  expect(res.error!.message, `código inesperado: ${JSON.stringify(res.error)}`).toBe(code)
 }

@@ -4,6 +4,7 @@
 
 1. Crear proyecto en https://supabase.com/dashboard (región São Paulo, plan Free). Guardar la contraseña de la base.
 2. Authentication → Sign In / Providers → Email → apagar "Allow new users to sign up".
+   El archivo `supabase/config.toml` también fija `enable_signup = false`; después de cualquier `supabase config push` o recreación del proyecto, volver a verificar el interruptor en el dashboard: el trigger que vincula cuentas por email depende de que el registro público esté cerrado.
 3. Authentication → URL Configuration → agregar a "Redirect URLs" cada origen de la app seguido de `/auth/restablecer` (por ejemplo `http://localhost:5173/auth/restablecer` y la URL de Vercel). Sin esto, la recuperación de contraseña no vuelve a la app.
 
 ## 2. Enlazar la CLI (una vez por máquina)
@@ -32,11 +33,13 @@ Alternativa sin CLI: pegar cada archivo de `supabase/migrations/` en orden en SQ
 
 Regla: una migración aplicada no se edita; los cambios van en una nueva.
 
+Regla: Toda migración que cree una tabla nueva debe repetir `revoke all on <tabla> from anon, authenticated; grant select on <tabla> to authenticated;` y sus políticas RLS: los permisos por defecto de Supabase exponen las tablas nuevas.
+
 ## 5. Cuentas de acceso
 
 Las cuentas se crean desde el dashboard, nunca por registro público:
 
-1. En la app, el administrador crea el perfil (`/usuarios`) con email, rol y sucursal. Para el primer administrador, el perfil ya viene en el seed (`admin@pelu.com`).
+1. En la app, el administrador crea el perfil (`/usuarios`) con email, rol y sucursal. Para el primer administrador, el perfil ya viene en el seed (`admin@example.com`).
 2. Dashboard → Authentication → Users → Add user → Create new user: mismo email, contraseña, "Auto Confirm User" activado.
 3. El trigger `on_auth_user_created` vincula la cuenta con el perfil. En `/usuarios` desaparece el chip "Sin cuenta".
 

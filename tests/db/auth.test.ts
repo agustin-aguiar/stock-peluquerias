@@ -33,6 +33,11 @@ describe('CP-01 sin sesión', () => {
     expect((await anonClient().from('branches').select('*')).error).not.toBeNull()
     expect((await anonClient().from('profiles').select('*')).error).not.toBeNull()
   })
+  it('anon no ejecuta create_branch', async () => {
+    const res = await anonClient().rpc('create_branch', { p_code: 'ZZ', p_name: 'x' })
+    expect(res.error).not.toBeNull()
+    expect(res.error!.code).toBe('42501')
+  })
 })
 
 describe('trigger de vinculación', () => {

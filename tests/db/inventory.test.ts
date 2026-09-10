@@ -16,6 +16,8 @@ beforeAll(async () => {
   const b = await t.adminUser.client.rpc('upsert_product', { p_sku: 'VT-250', p_name: 'Shampoo venta 250 ml', p_unit: 'unit' })
   if (b.error) throw b.error
   botellaId = b.data.id
+  const en = await t.adminUser.client.rpc('enable_product_in_branch', { p_product_id: botellaId, p_branch_id: t.branchA, p_min_qty: 5 })
+  if (en.error) throw en.error
 })
 afterAll(async () => {
   await t.cleanup()

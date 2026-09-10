@@ -41,4 +41,4 @@ cp .env.example .env.local        # completar con URL y anon key del proyecto
 
 ## Usuarios demo
 
-Perfiles del seed: `admin@pelu.com` (administrador), `centro@pelu.com` y `pocitos@pelu.com` (operadores). Las contraseñas se definen al crear las cuentas en Supabase (ver `docs/operacion.md`); no viven en el repositorio.
+Perfiles del seed: `admin@example.com` (administrador), `centro@example.com` y `pocitos@example.com` (operadores). Las contraseñas se definen al crear las cuentas en Supabase (ver `docs/operacion.md`); no viven en el repositorio.
