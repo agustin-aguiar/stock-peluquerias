@@ -136,7 +136,7 @@ Expected: los tres existen. Si falta `supabase/.temp/project-ref`, el proyecto n
     "test:watch": "vitest",
     "test:db": "vitest run --config vitest.db.config.ts",
     "db:push": "supabase db push --yes",
-    "db:seed": "supabase db push --yes --include-seed",
+    "db:seed": "supabase db push --yes && supabase db query --linked -f supabase/seed.sql",
     "db:types": "supabase gen types --lang typescript --linked --schema public > src/types/database.ts"
   },
   "dependencies": {

@@ -121,7 +121,7 @@ Toda FK a `branches`, `products`, `profiles` lleva además comprobación de cade
 - Supabase Auth, email + contraseña. Registro público deshabilitado en el dashboard (Authentication → Providers → Email → "Allow new users to sign up" apagado). Documentado en `docs/operacion.md`.
 - Recuperación de contraseña: `supabase.auth.resetPasswordForEmail(email, { redirectTo: <origen>/auth/restablecer })`. La ruta `/auth/restablecer` toma la sesión de recuperación y llama `updateUser({ password })`.
 - Alta de cuentas: el administrador pre-registra el perfil en `/usuarios` (email, nombre, rol, sucursal). La cuenta de Auth se crea desde Dashboard → Authentication → Users → "Add user" (con "Auto Confirm"). El trigger vincula por email. La invitación automática por Edge Function queda como mejora P1 (SP4).
-- Bootstrap del primer administrador: `seed.sql` crea la cadena y el perfil admin con email fijo (`admin@demo.local`). El usuario crea esa cuenta en el dashboard. Procedimiento en `docs/operacion.md`.
+- Bootstrap del primer administrador: `seed.sql` crea la cadena y el perfil admin con email fijo (`admin@pelu.com`). El usuario crea esa cuenta en el dashboard. Procedimiento en `docs/operacion.md`.
 
 ### 5.2 Helpers SQL
 
@@ -293,7 +293,7 @@ Recorridos de navegador (Playwright), carga (RNF-03) y restauración (CP-28) que
 
 - Cadena "Cadena Demo", zona `America/Montevideo`.
 - Sucursales: Centro (`CEN`), Pocitos (`POC`).
-- Perfiles: `admin@demo.local` (admin), `centro@demo.local` (operador CEN), `pocitos@demo.local` (operador POC). Las cuentas Auth se crean a mano; contraseñas no viven en el repositorio.
+- Perfiles: `admin@pelu.com` (admin), `centro@pelu.com` (operador CEN), `pocitos@pelu.com` (operador POC). Las cuentas Auth se crean a mano; contraseñas no viven en el repositorio.
 - ~50 SKU: tinturas por tono (unit), oxidantes 10/20/30/40 vol (ml, envase 1.000), shampoo y acondicionador profesional (ml, envase 1.000), polvo decolorante (g, envase 500), ampollas y tratamientos (unit), guantes y descartables (unit), productos de venta cerrada (unit).
 - Todos habilitados en ambas sucursales con mínimos razonables. Saldos iniciales insertados directamente en `operations`/`movements`/`inventory` por el seed (rol `postgres`), con `type='initial'`, `initialized_at = now()` y actor = perfil admin. Alertas abiertas donde corresponda.
 - Valores determinísticos del guion (plan §23.2): shampoo profesional en Centro 2.000,00 ml, mínimo 1.980,00; shampoo venta 250 ml en Centro 10 u y Pocitos 2 u, mínimo 5 u.
