@@ -70,11 +70,11 @@ peluqueria/
 
 Dependencias runtime: `react`, `react-dom`, `react-router`, `@tanstack/react-query`, `@supabase/supabase-js`, `zod`, `lucide-react`. Dev: `vite`, `typescript`, `tailwindcss`, `@tailwindcss/vite`, `vitest`, `supabase` (CLI vía npx), `eslint`, `prettier`.
 
-Migraciones se aplican con `npx supabase login` (una vez, por el usuario), `npx supabase link --project-ref <ref>` y `npx supabase db push`. Alternativa documentada: pegar cada migración en el SQL Editor en orden. Tipos: `npx supabase gen types typescript --linked > src/types/database.ts`.
+Migraciones se aplican con `npx supabase login` y `npx supabase link --project-ref <ref>` (una vez, por el usuario; el link guarda la contraseña de la base en el almacén de credenciales del sistema) y luego `npx supabase db push`. El seed se aplica con `npx supabase db push --include-seed` y las consultas de verificación con `npx supabase db query --linked`. Alternativa documentada: pegar cada archivo en el SQL Editor en orden. Tipos: `npx supabase gen types typescript --linked > src/types/database.ts`.
 
 ## 4. Modelo físico
 
-Esquema `public`. Cantidades `numeric(14,2)`. Fechas `timestamptz` en UTC. Identificadores `uuid` con `gen_random_uuid()`. Extensión `citext` para emails. Toda FK a `chains` es `on delete cascade` (permite recrear la cadena demo); el resto de FK son `restrict`.
+Esquema `public`. Cantidades `numeric(14,2)`. Fechas `timestamptz` en UTC. Identificadores `uuid` con `gen_random_uuid()`. Emails como `text` normalizados con `lower()` en índices y búsquedas (sin extensión `citext`, para no depender del `search_path`). Toda FK a `chains` es `on delete cascade` (permite recrear la cadena demo); el resto de FK son `no action` (comprobación al final de la sentencia, compatible con la cascada).
 
 ### 4.1 Tipos
 
@@ -95,11 +95,11 @@ Los valores del enum son identificadores en inglés; la interfaz muestra etiquet
 |---|---|---|
 | `chains` | id, name, timezone (text, default `America/Montevideo`), created_at | — |
 | `branches` | id, chain_id, code, name, is_active (default true), created_at | unique (chain_id, code); code `^[A-Z0-9]{2,8}$` |
-| `profiles` | id, chain_id, auth_user_id (uuid null, unique, FK `auth.users` on delete set null), email (citext), full_name, role, branch_id (null), is_active (default true), created_at | unique (chain_id, email); check `(role='operator' and branch_id is not null) or (role='admin' and branch_id is null)`; FK branch_id → branches |
-| `products` | id, chain_id, sku, name, brand (null), category (null), variant (null), unit, presentation (text null, ej. "Envase 1 L"), presentation_qty (numeric null, contenido por envase en unidad base), max_movement_qty (numeric, default 100000), is_active, created_at | unique (chain_id, sku); sku `^[A-Za-z0-9._-]{1,40}$`; presentation_qty > 0 si no es null; max_movement_qty > 0 |
+| `profiles` | id, chain_id, auth_user_id (uuid null, unique, FK `auth.users` on delete set null), email (text), full_name, role, branch_id (null), is_active (default true), created_at | índice único (chain_id, lower(email)); check `(role='operator' and branch_id is not null) or (role='admin' and branch_id is null)`; FK branch_id → branches |
+| `products` | id, chain_id, sku, name, brand (null), category (null), variant (null), unit, presentation (text null, ej. "Envase 1 L"), presentation_qty (numeric null, contenido por envase en unidad base), max_movement_qty (numeric, default 100000), is_active, created_at | índice único (chain_id, lower(sku)); sku `^[A-Za-z0-9._-]{1,40}$`; presentation_qty > 0 si no es null; max_movement_qty > 0 |
 | `inventory` | id, chain_id, branch_id, product_id, balance (default 0), min_qty (default 0), version (bigint default 1), initialized_at (timestamptz null), updated_at | unique (branch_id, product_id); balance ≥ 0; min_qty ≥ 0. `initialized_at` marca que se registró el saldo inicial, incluso si fue 0 |
 | `operations` | id, chain_id, type, actor_profile_id, idempotency_key (uuid), request_hash (text), reason (null), reference (null), result (jsonb), created_at | unique (chain_id, idempotency_key) |
-| `movements` | id, chain_id, operation_id, product_id, branch_id (null), transfer_id (null), qty_delta (≠ 0), unit, reverses_movement_id (null, unique), created_at | check `(branch_id is not null) <> (transfer_id is not null)`; índices (chain_id, product_id, created_at), (branch_id, created_at), (transfer_id) |
+| `movements` | id, chain_id, operation_id, product_id, branch_id (null), transfer_id (null), qty_delta (≠ 0), unit, reverses_movement_id (null, unique), created_at | check `branch_id is not null or transfer_id is not null`: fila con `branch_id` null es tránsito y debe llevar `transfer_id`; una fila de sucursal puede llevar `transfer_id` como referencia; índices (chain_id, product_id, created_at), (branch_id, created_at), (transfer_id) |
 | `transfers` | id, chain_id, product_id, from_branch_id, to_branch_id, qty (> 0), status (default draft), shipping_ref (null), created_by, created_at, dispatched_by/at, received_by/at, dispute_note, disputed_by/at, resolved_qty_received, resolved_qty_returned, resolved_qty_lost, resolution_note, resolved_by/at | check from ≠ to; índices por status y por sucursal |
 | `alerts` | id, chain_id, branch_id, product_id, status, opened_at, resolved_at | unique parcial (branch_id, product_id) where status = 'open' |
 | `audit_events` | id, chain_id, actor_profile_id, action (text), entity_type (text), entity_id (uuid), old_values (jsonb), new_values (jsonb), created_at | índice (chain_id, created_at) |
@@ -145,6 +145,8 @@ RLS habilitada (`ENABLE ROW LEVEL SECURITY`, sin `FORCE`) en todas las tablas. S
 | transfers | admin: cadena; operador: `from_branch_id = current_branch_id() or to_branch_id = current_branch_id()` |
 | audit_events | admin: cadena; operador: ninguna |
 
+Vista `inventory_status` con `security_invoker = true` (hereda la RLS de `inventory`, `products` y `branches`): une las tres tablas y expone `below_min = (balance <= min_qty)`, `sku`, `product_name`, `unit`, `product_active`, `branch_code`, `branch_name`, `branch_active`. Es la fuente de las pantallas de inventario y disponibilidad, y permite filtrar "bajo mínimo" y buscar por SKU/nombre en el servidor.
+
 Vista `profiles_public (id, chain_id, full_name, role, branch_id)` **sin** `security_invoker` (se ejecuta como su dueño `postgres`) definida como `select ... from profiles where chain_id = current_chain_id()`. Es la única vista privilegiada de SP1: expone solo id y nombre de perfiles de la propia cadena, nunca email, y devuelve cero filas si `current_profile()` es null. Sirve para mostrar "registrado por" en SP2. Tiene prueba propia en 8.2.
 
 ### 5.4 RPC
@@ -182,7 +184,7 @@ Un `p_qty = 0` es válido (registra que el producto se contó y estaba vacío), 
 
 `RAISE EXCEPTION USING MESSAGE = '<código>', DETAIL = '<texto en español>', ERRCODE = 'P0001'`. Códigos de SP1:
 
-`not_authenticated`, `inactive_user`, `no_profile`, `permission_denied`, `not_found`, `wrong_chain`, `duplicate_code`, `duplicate_sku`, `duplicate_email`, `invalid_code`, `invalid_sku`, `invalid_quantity`, `unit_locked`, `has_stock`, `has_open_transfers`, `has_active_users`, `already_enabled`, `not_enabled`, `already_initialized`, `idempotency_conflict`, `last_admin`, `self_deactivation`, `branch_required`, `branch_inactive`, `product_inactive`.
+`not_authenticated`, `inactive_user`, `no_profile`, `permission_denied`, `not_found`, `duplicate_code`, `duplicate_sku`, `duplicate_email`, `invalid_code`, `invalid_sku`, `invalid_name`, `invalid_email`, `invalid_role`, `invalid_unit`, `invalid_quantity`, `invalid_key`, `unit_locked`, `has_stock`, `has_open_transfers`, `has_active_users`, `already_enabled`, `not_enabled`, `already_initialized`, `idempotency_conflict`, `last_admin`, `self_deactivation`, `branch_required`, `branch_inactive`, `product_inactive`.
 
 `src/lib/errors.ts` mapea código → mensaje es-UY; código desconocido ⇒ "Ocurrió un error inesperado. El cambio no se guardó."
 
@@ -213,7 +215,7 @@ Guardas (`RequireAuth`, `RequireRole`) son ayuda visual. El servidor decide.
 - Header persistente: logo/nombre, **pill de sucursal** (champagne) con nombre del local activo; admin puede cambiar; operador lo ve fijo. Menú de usuario con nombre, rol y "Cerrar sesión".
 - Desktop ≥ 1024 px: rail lateral 16 rem. Móvil: bottom nav (Inicio/Inventario/Catálogo/Más según rol).
 - Banner "Sin conexión" con `navigator.onLine` + eventos; botones de confirmación deshabilitados mientras dure.
-- Sesión vencida (error 401/JWT expired en cualquier query): toast + redirección a `/login?expirada=1`.
+- Sesión vencida: supabase-js emite `SIGNED_OUT` cuando el refresh token deja de ser válido; si no fue un cierre explícito, se marca en `sessionStorage` y `/login` muestra "Tu sesión venció. Volvé a ingresar."
 
 ### 6.3 Datos y estado
 
@@ -263,9 +265,9 @@ Componentes UI de SP1: `Button` (primary/secondary/danger), `Input`, `Select`, `
 - `errors.test.ts`: mapa de códigos y fallback.
 - `schemas.test.ts`: zod de producto, sucursal, usuario, saldo inicial.
 
-### 8.2 Integración con base (vitest, `RUN_DB_TESTS=1 npm run test:db`)
+### 8.2 Integración con base (vitest, `npm run test:db`)
 
-Requiere `.env.test.local` con `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (ignorado por git). `setup.ts` crea una cadena `test-<uuid>`, tres usuarios Auth (admin, operador A en sucursal A, operador B en sucursal B) con la API admin, y borra todo al terminar.
+Configuración separada (`vitest.db.config.ts`) para que `npm test` nunca toque la base. Requiere `.env.test.local` con `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (ignorado por git); si falta, la suite falla al inicio con un mensaje claro. `setup.ts` crea una cadena `test-<uuid>`, tres usuarios Auth (admin, operador A en sucursal A, operador B en sucursal B) con la API admin, y borra todo al terminar.
 
 | Caso | Prueba |
 |---|---|
