@@ -84,7 +84,10 @@ export function UsuariosPage() {
           <ul className="flex flex-col gap-3 md:hidden">
             {profiles.data.map((p) => (
               <li key={p.id} className="rounded-lg border border-hairline bg-surface p-4">
-                <p className="font-semibold">{p.full_name}</p>
+                <p className="font-semibold">
+                  {p.full_name}
+                  {p.id === me.id && <span className="ml-2 text-xs text-muted">(vos)</span>}
+                </p>
                 <p className="text-sm text-muted">{p.email}</p>
                 <p className="mt-1 text-sm">
                   {ROLE_LABEL[p.role]} · {p.role === 'operator' ? branchName(p.branch_id) : 'Toda la cadena'}
