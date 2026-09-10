@@ -53,6 +53,19 @@ describe('enable_product_in_branch / set_min_qty', () => {
       'permission_denied',
     )
   })
+  it('carrera de unicidad: fila ya insertada por fuera devuelve already_enabled, no un error crudo de Postgres', async () => {
+    const p = await t.adminUser.client.rpc('upsert_product', { p_sku: 'RACE-1', p_name: 'Producto de carrera', p_unit: 'unit' })
+    expect(p.error).toBeNull()
+    const raceProductId = p.data.id
+    const direct = await admin
+      .from('inventory')
+      .insert({ chain_id: t.chainId, branch_id: t.branchB, product_id: raceProductId, min_qty: 0 })
+    expect(direct.error).toBeNull()
+    expectRpcError(
+      await t.adminUser.client.rpc('enable_product_in_branch', { p_product_id: raceProductId, p_branch_id: t.branchB }),
+      'already_enabled',
+    )
+  })
   it('CP-20 (parcial) cambiar el mínimo recalcula sin duplicar alertas', async () => {
     const r1 = await t.adminUser.client.rpc('set_min_qty', { p_branch_id: t.branchA, p_product_id: shampooId, p_min_qty: 0 })
     expect(r1.error).toBeNull()
