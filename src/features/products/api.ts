@@ -12,9 +12,13 @@ export const productKeys = {
   availability: (id: string) => ['inventory', 'product', id] as const,
 }
 
-/** Quita caracteres que rompen el filtro `or` de PostgREST. */
+/**
+ * Quita caracteres que rompen el filtro `or` de PostgREST (coma, paréntesis, `%`).
+ * Conserva el punto: PostgREST solo interpreta los dos primeros puntos de
+ * `columna.operador.valor`, así que un punto dentro del valor (ej. SKU "TIN-1.0") es seguro.
+ */
 export function sanitizeSearch(q: string): string {
-  return q.replace(/[,()%.]/g, ' ').trim()
+  return q.replace(/[,()%]/g, ' ').trim()
 }
 
 export function useProducts(filters: ProductFilters) {

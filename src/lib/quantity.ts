@@ -15,8 +15,12 @@ export function parseQuantity(input: string, unit: UnitKind): ParseResult {
   if (raw === '') return { ok: false, error: 'Ingresá una cantidad.' }
 
   // Con coma: la coma es decimal y los puntos son separadores de miles.
-  // Sin coma: el punto (si hay) es decimal.
-  const normalized = raw.includes(',') ? raw.replace(/\./g, '').replace(',', '.') : raw
+  // Sin coma: el punto (si hay) es decimal — salvo en productos por unidad, donde
+  // un entero agrupado por miles ("1.000", "100.000") se interpreta como tal.
+  let normalized = raw.includes(',') ? raw.replace(/\./g, '').replace(',', '.') : raw
+  if (!raw.includes(',') && unit === 'unit' && /^\d{1,3}(\.\d{3})+$/.test(raw)) {
+    normalized = raw.replace(/\./g, '')
+  }
 
   if (!/^\d+(\.\d+)?$/.test(normalized)) {
     return { ok: false, error: 'La cantidad debe ser un número positivo.' }
@@ -40,6 +44,18 @@ export function formatNumber(value: number, unit: UnitKind): string {
   const grouped = (intPart ?? '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.')
   const sign = value < 0 ? '-' : ''
   return fracPart ? `${sign}${grouped},${fracPart}` : `${sign}${grouped}`
+}
+
+/**
+ * Texto de precarga para inputs editables: siempre un valor que `parseQuantity`
+ * acepta de vuelta sin transformación (round-trip seguro). Para `unit`, dígitos
+ * enteros sin agrupar (evita que un punto agrupador se lea como decimal cuando
+ * no hay coma). Para `ml`/`g`, igual a `formatNumber`.
+ */
+export function formatForInput(value: number, unit: UnitKind): string {
+  if (unit !== 'unit') return formatNumber(value, unit)
+  const sign = value < 0 ? '-' : ''
+  return `${sign}${Math.trunc(Math.abs(value)).toString()}`
 }
 
 /** "1.974,50 ml" / "6 u". Siempre cantidad y unidad juntas. */

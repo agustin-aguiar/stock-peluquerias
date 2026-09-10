@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatNumber, formatQuantity, packagesToBase, parseQuantity } from '@/lib/quantity'
+import { formatForInput, formatNumber, formatQuantity, packagesToBase, parseQuantity } from '@/lib/quantity'
 
 describe('parseQuantity', () => {
   it('acepta coma decimal y punto de miles', () => {
@@ -28,6 +28,13 @@ describe('parseQuantity', () => {
     expect(parseQuantity('0', 'unit')).toEqual({ ok: true, value: 0 })
     expect(parseQuantity('0,00', 'ml')).toEqual({ ok: true, value: 0 })
   })
+  it('acepta enteros agrupados por miles en productos por unidad', () => {
+    expect(parseQuantity('1.000', 'unit')).toEqual({ ok: true, value: 1000 })
+    expect(parseQuantity('100.000', 'unit')).toEqual({ ok: true, value: 100000 })
+  })
+  it('rechaza decimales agrupados en productos por unidad', () => {
+    expect(parseQuantity('1.0', 'unit').ok).toBe(false)
+  })
 })
 
 describe('formatNumber / formatQuantity', () => {
@@ -44,6 +51,26 @@ describe('formatNumber / formatQuantity', () => {
   })
   it('conserva el signo', () => {
     expect(formatQuantity(-25.5, 'ml')).toBe('-25,50 ml')
+  })
+})
+
+describe('formatForInput', () => {
+  it('unidades: dígitos enteros sin agrupar', () => {
+    expect(formatForInput(100000, 'unit')).toBe('100000')
+  })
+  it('ml/g: igual a formatNumber', () => {
+    expect(formatForInput(1974.5, 'ml')).toBe('1.974,50')
+  })
+  it('round-trip: parseQuantity(formatForInput(v, u), u) devuelve v', () => {
+    const cases: Array<[number, 'unit' | 'ml' | 'g']> = [
+      [100000, 'unit'],
+      [6, 'unit'],
+      [1974.5, 'ml'],
+      [0, 'g'],
+    ]
+    for (const [v, u] of cases) {
+      expect(parseQuantity(formatForInput(v, u), u)).toEqual({ ok: true, value: v })
+    }
   })
 })
 

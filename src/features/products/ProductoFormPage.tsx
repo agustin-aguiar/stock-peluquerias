@@ -8,7 +8,7 @@ import { Select } from '@/components/ui/Select'
 import { ErrorState, LoadingState } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { messageFor } from '@/lib/errors'
-import { formatNumber, parseQuantity, UNIT_LABEL, UNIT_NAME } from '@/lib/quantity'
+import { formatForInput, parseQuantity, UNIT_LABEL, UNIT_NAME } from '@/lib/quantity'
 import { fieldErrors, type FieldErrors } from '@/lib/validation'
 import type { UnitKind } from '@/types/models'
 import { useProduct, useProductAvailability, useUpsertProduct } from './api'
@@ -39,10 +39,11 @@ export function ProductoFormPage() {
   const [isActive, setIsActive] = useState(true)
   const [errors, setErrors] = useState<FieldErrors>({})
   const [serverError, setServerError] = useState<string | null>(null)
+  const [seededId, setSeededId] = useState<string | null>(null)
 
   useEffect(() => {
     const p = product.data
-    if (!p) return
+    if (!p || seededId === p.id) return
     setSku(p.sku)
     setName(p.name)
     setUnit(p.unit)
@@ -50,10 +51,11 @@ export function ProductoFormPage() {
     setCategory(p.category ?? '')
     setVariant(p.variant ?? '')
     setPresentation(p.presentation ?? '')
-    setPresentationQty(p.presentation_qty == null ? '' : formatNumber(Number(p.presentation_qty), p.unit))
-    setMaxQty(formatNumber(Number(p.max_movement_qty), p.unit))
+    setPresentationQty(p.presentation_qty == null ? '' : formatForInput(Number(p.presentation_qty), p.unit))
+    setMaxQty(formatForInput(Number(p.max_movement_qty), p.unit))
     setIsActive(p.is_active)
-  }, [product.data])
+    setSeededId(p.id)
+  }, [product.data, seededId])
 
   const unitLocked = (availability.data ?? []).some((r) => r.initialized_at != null)
 
