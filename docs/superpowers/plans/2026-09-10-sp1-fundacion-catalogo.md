@@ -4117,7 +4117,7 @@ describe('profileSchema', () => {
     const r = profileSchema.safeParse({ email: ' Admin@Example.com ', full_name: 'Ana', role: 'admin', branch_id: '' })
     expect(r.success).toBe(true)
     if (r.success) {
-      expect(r.data.email).toBe('admin@pelu.com')
+      expect(r.data.email).toBe('admin@example.com')
       expect(r.data.branch_id).toBeNull()
     }
   })
