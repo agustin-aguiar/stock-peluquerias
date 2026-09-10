@@ -113,10 +113,13 @@ describe('CP-04 usuario desactivado con sesión vigente', () => {
 describe('aislamiento entre cadenas', () => {
   it('otra cadena no es visible ni para el admin', async () => {
     const { data: other } = await admin.from('chains').insert({ name: 'otra-cadena' }).select().single()
-    await admin.from('branches').insert({ chain_id: other!.id, code: 'OT', name: 'Otra' })
-    const { data } = await t.adminUser.client.from('branches').select('code')
-    expect(data!.map((r) => r.code).sort()).toEqual(['TA', 'TB'])
-    await admin.from('chains').delete().eq('id', other!.id)
+    try {
+      await admin.from('branches').insert({ chain_id: other!.id, code: 'OT', name: 'Otra' })
+      const { data } = await t.adminUser.client.from('branches').select('code')
+      expect(data!.map((r) => r.code).sort()).toEqual(['TA', 'TB'])
+    } finally {
+      await admin.from('chains').delete().eq('id', other!.id)
+    }
   })
 })
 
