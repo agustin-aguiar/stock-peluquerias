@@ -7,6 +7,8 @@ import { RestablecerPage } from '@/features/auth/RestablecerPage'
 import { SinPerfilPage } from '@/features/auth/SinPerfilPage'
 import { SucursalesPage } from '@/features/branches/SucursalesPage'
 import { HomeRedirect } from '@/features/home/HomeRedirect'
+import { InventarioPage } from '@/features/inventory/InventarioPage'
+import { ProductoDetallePage } from '@/features/inventory/ProductoDetallePage'
 import { CatalogoPage } from '@/features/products/CatalogoPage'
 import { ProductoFormPage } from '@/features/products/ProductoFormPage'
 import { UsuariosPage } from '@/features/users/UsuariosPage'
@@ -29,8 +31,8 @@ export const router = createBrowserRouter([
             element: <AppShell />,
             children: [
               { index: true, element: <HomeRedirect /> },
-              { path: 'inventario', element: <PlaceholderPage title="Inventario" /> },
-              { path: 'inventario/:productId', element: <PlaceholderPage title="Producto" /> },
+              { path: 'inventario', element: <InventarioPage /> },
+              { path: 'inventario/:productId', element: <ProductoDetallePage /> },
               {
                 element: <RequireRole role="admin" />,
                 children: [
