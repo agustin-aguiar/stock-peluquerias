@@ -7,6 +7,7 @@ import { RestablecerPage } from '@/features/auth/RestablecerPage'
 import { SinPerfilPage } from '@/features/auth/SinPerfilPage'
 import { SucursalesPage } from '@/features/branches/SucursalesPage'
 import { HomeRedirect } from '@/features/home/HomeRedirect'
+import { InicioAdminPage } from '@/features/home/InicioAdminPage'
 import { InventarioPage } from '@/features/inventory/InventarioPage'
 import { ProductoDetallePage } from '@/features/inventory/ProductoDetallePage'
 import { CatalogoPage } from '@/features/products/CatalogoPage'
@@ -14,7 +15,6 @@ import { ProductoFormPage } from '@/features/products/ProductoFormPage'
 import { UsuariosPage } from '@/features/users/UsuariosPage'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
-import { PlaceholderPage } from '@/pages/PlaceholderPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
               {
                 element: <RequireRole role="admin" />,
                 children: [
-                  { path: 'inicio', element: <PlaceholderPage title="Inicio" /> },
+                  { path: 'inicio', element: <InicioAdminPage /> },
                   { path: 'catalogo', element: <CatalogoPage /> },
                   { path: 'catalogo/nuevo', element: <ProductoFormPage /> },
                   { path: 'catalogo/:productId', element: <ProductoFormPage /> },
