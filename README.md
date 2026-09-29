@@ -3,7 +3,7 @@
 Control de stock para una cadena de peluquerías con varias sucursales. Proyecto académico (IET, ORT Uruguay, 2026).
 Aplicación web (React + Vite) sobre Supabase (PostgreSQL, Auth, RLS). Las escrituras pasan solo por funciones PostgreSQL que validan rol, sucursal y cantidades y registran auditoría.
 
-Estado: SP1–SP3 implementados; SP4 incluye tablero, conteos físicos y CSV. C7 comenzó con una prueba de tercera sucursal, una vista de auditoría y navegación móvil mejorada. El resumen diario por correo y las invitaciones por email siguen pendientes. Ver `docs/referencia/plan-v1.md` y `docs/bitacora.md`.
+Estado: SP1–SP3 implementados; SP4 incluye tablero, conteos físicos y CSV. Inventario permite asignar stock directamente a una sucursal: habilita el producto y registra saldo inicial o ingreso en una sola operación. C7 comenzó con una prueba de tercera sucursal, una vista de auditoría y navegación móvil mejorada. El resumen diario por correo y las invitaciones por email siguen pendientes. Ver `docs/referencia/plan-v1.md` y `docs/bitacora.md`.
 
 - Repositorio: https://github.com/agustin-aguiar/stock-peluquerias
 - Aplicación publicada: https://stock-peluquerias.vercel.app (cada push a `main` despliega automáticamente)

@@ -95,7 +95,7 @@ export function AvailabilitySection({ productId, unit }: { productId: string; un
     <section className="mt-8">
       <h2 className="text-lg font-semibold">Disponibilidad por sucursal</h2>
       <p className="mb-3 text-sm text-muted">
-        Habilitar crea el inventario con saldo 0. El saldo inicial se registra desde la ficha en Inventario.
+        También podés cargar stock directamente desde Inventario: el producto se habilita en la sucursal de forma automática.
       </p>
       <ul className="flex flex-col gap-3">
         {visible.map((b) => (

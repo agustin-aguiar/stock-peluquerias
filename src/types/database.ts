@@ -754,6 +754,10 @@ export type Database = {
       }
     }
     Functions: {
+      assign_stock: {
+        Args: { p_key: string; p_branch_id: string; p_product_id: string; p_qty: number; p_reference?: string | null }
+        Returns: Json
+      }
       import_csv_batch: { Args: { p_id: string; p_kind: string; p_rows: Json }; Returns: Json }
       submit_physical_count: { Args: { p_id: string; p_branch_id: string; p_product_id: string; p_observed_qty: number; p_note?: string | null }; Returns: Json }
       approve_physical_count: { Args: { p_count_id: string }; Returns: Json }

@@ -38,3 +38,10 @@ Plantilla por semana (plan §24.1). Una entrada por semana de trabajo.
 - **Pruebas:** `tests/db/pilot.test.ts` comprueba CP-23 en una tercera sucursal temporal: operador propio, aislamiento de lectura y escritura, saldos y recepción de transferencia. También comprueba CP-31 para cambios de mínimos, producto y perfil, y que el operador no lea auditoría.
 - **Validación:** 44 pruebas unitarias, 2 nuevas pruebas de integración, TypeScript, ESLint y build aprobados. La prueba de navegador con ambas cuentas queda pendiente; se verificó que la app local abre el login.
 - **Pendiente de C7:** piloto guiado con personas, medición con 20 sesiones y unos 5.000 movimientos, respaldo y restauración en ambiente separado, recorrido de teclado/celular autenticado. El correo de SP4 permanece pendiente por decisión del usuario.
+
+## Mejora de usabilidad de Inventario — 2026-09-29
+
+- **Pedido:** cargar materias primas en locales desde Inventario sin pasar por Catálogo y luego por la ficha de producto.
+- **Implementado:** botón «Asignar stock» general y por producto/sucursal, con cantidad o envases y vista previa del saldo. La RPC `assign_stock` habilita el producto cuando falta y registra saldo inicial o ingreso dentro de una sola transacción; conserva clave de reintento y auditoría.
+- **Validación:** `tests/db/assignStock.test.ts` comprueba primera carga, ingreso posterior, reintento, permisos, rechazo sin cambios parciales y dos cargas simultáneas. La primera corrida detectó un tipo enum sin cast; se corrigió en la migración `0011_fix_assign_stock_type.sql` y las cuatro pruebas pasaron.
+- **Respaldo:** la CLI de Supabase no pudo generar un dump en este equipo porque no hay Docker ni Podman. Las migraciones nuevas solo agregan/reemplazan la función y no cambian datos existentes. La prueba de respaldo y restauración de C7 sigue pendiente.

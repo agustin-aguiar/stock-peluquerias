@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { Search } from 'lucide-react'
+import { useCurrentProfile } from '@/app/guards'
 import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { Input } from '@/components/ui/Input'
@@ -14,23 +15,27 @@ import type { InventoryStatus, UnitKind } from '@/types/models'
 import { COMPARE_LIMIT, PAGE_SIZE, useInventory } from './api'
 import { groupByProduct } from './group'
 import { StatusChip } from './StatusChip'
+import { QuickStockDialog } from './QuickStockDialog'
 
-function Cell({ row, unit }: { row: InventoryStatus | undefined; unit: UnitKind }) {
-  if (!row) return <span className="text-muted">—</span>
+function Cell({ row, unit, onAssign }: { row: InventoryStatus | undefined; unit: UnitKind; onAssign?: () => void }) {
   return (
     <span className="flex flex-col items-end gap-1">
-      <span className="font-semibold tnum">{formatQuantity(Number(row.balance ?? 0), unit)}</span>
-      {(!row.initialized_at || row.below_min) && <StatusChip row={row} />}
+      <span className="font-semibold tnum">{row ? formatQuantity(Number(row.balance ?? 0), unit) : '—'}</span>
+      {row && (!row.initialized_at || row.below_min) && <StatusChip row={row} />}
+      {onAssign && <button type="button" className="text-xs underline" onClick={onAssign}>Asignar</button>}
     </span>
   )
 }
 
 export function InventarioPage() {
+  const profile = useCurrentProfile()
+  const isAdmin = profile.role === 'admin'
   const { branchId } = useActiveBranch()
   const branches = useBranches()
   const [search, setSearch] = useState('')
   const [onlyBelowMin, setOnlyBelowMin] = useState(false)
   const [page, setPage] = useState(0)
+  const [assignment, setAssignment] = useState<{ branchId?: string; productId?: string } | null>(null)
   useEffect(() => setPage(0), [branchId, search, onlyBelowMin])
   const inventory = useInventory({ branchId, search, onlyBelowMin, page })
 
@@ -49,6 +54,7 @@ export function InventarioPage() {
         eyebrow={compare ? 'Comparación entre locales' : (branchName ?? 'Sucursal')}
         title="Inventario"
         description={compare ? 'Un mismo SKU en cada sucursal. No se suman unidades distintas.' : 'Saldo utilizable por producto.'}
+        actions={isAdmin && <Button onClick={() => setAssignment({ branchId: branchId === 'all' ? undefined : branchId })}>Asignar stock</Button>}
       />
       <div className="mb-4 flex flex-wrap items-end gap-4">
         <div className="relative w-full max-w-sm">
@@ -66,7 +72,7 @@ export function InventarioPage() {
       {inventory.data && rows.length === 0 && (
         <EmptyState
           title={search || onlyBelowMin ? 'Sin resultados' : 'No hay productos habilitados'}
-          description={search || onlyBelowMin ? 'Probá quitando filtros.' : 'El administrador habilita productos desde el catálogo.'}
+          description={search || onlyBelowMin ? 'Probá quitando filtros.' : isAdmin ? 'Usá «Asignar stock» para cargar un producto en esta sucursal.' : 'El administrador carga productos para esta sucursal.'}
         />
       )}
 
@@ -81,6 +87,7 @@ export function InventarioPage() {
                 <th className="py-2 pr-4 text-right">Saldo</th>
                 <th className="py-2 pr-4 text-right">Mínimo</th>
                 <th className="py-2">Estado</th>
+                {isAdmin && <th className="py-2 text-right">Acción</th>}
               </tr>
             </thead>
             <tbody>
@@ -98,6 +105,7 @@ export function InventarioPage() {
                   <td className="py-3">
                     <StatusChip row={r} />
                   </td>
+                  {isAdmin && <td className="py-3 text-right"><Button variant="secondary" onClick={() => setAssignment({ branchId: r.branch_id ?? undefined, productId: r.product_id ?? undefined })}>Asignar stock</Button></td>}
                 </tr>
               ))}
             </tbody>
@@ -118,6 +126,7 @@ export function InventarioPage() {
                   <span className="font-semibold">{formatQuantity(Number(r.balance ?? 0), (r.unit ?? 'unit') as UnitKind)}</span>
                   <span className="text-muted"> · mínimo {formatQuantity(Number(r.min_qty ?? 0), (r.unit ?? 'unit') as UnitKind)}</span>
                 </p>
+                {isAdmin && <Button variant="secondary" className="mt-3 w-full" onClick={() => setAssignment({ branchId: r.branch_id ?? undefined, productId: r.product_id ?? undefined })}>Asignar stock</Button>}
               </li>
             ))}
           </ul>
@@ -165,7 +174,8 @@ export function InventarioPage() {
                   </td>
                   {activeBranches.map((b) => (
                     <td key={b.id} className="py-3 pr-4 text-right">
-                      <Cell row={g.byBranch[b.id]} unit={g.unit} />
+                      <Cell row={g.byBranch[b.id]} unit={g.unit}
+                        onAssign={isAdmin ? () => setAssignment({ branchId: b.id, productId: g.productId }) : undefined} />
                     </td>
                   ))}
                 </tr>
@@ -177,6 +187,7 @@ export function InventarioPage() {
           )}
         </div>
       )}
+      {assignment && <QuickStockDialog open onClose={() => setAssignment(null)} selection={assignment} />}
     </>
   )
 }

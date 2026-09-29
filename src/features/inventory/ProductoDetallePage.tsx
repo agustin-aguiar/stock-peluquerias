@@ -51,7 +51,7 @@ export function ProductoDetallePage() {
       {rows.length === 0 && (
         <EmptyState
           title="Este producto no está habilitado en tu sucursal"
-          description={me.role === 'admin' ? 'Habilitalo desde el catálogo.' : undefined}
+          description={me.role === 'admin' ? 'Usá «Asignar stock» desde Inventario para cargarlo en una sucursal.' : undefined}
         />
       )}
       {rows.length > 0 && (

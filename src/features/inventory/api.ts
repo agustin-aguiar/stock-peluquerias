@@ -74,3 +74,24 @@ export function useSetInitialBalance() {
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['inventory'] }),
   })
 }
+
+export type AssignStockResult = InitialBalanceResult & { kind: 'initial' | 'purchase'; source: 'quick_assign' }
+
+export function useAssignStock() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { key: string; branchId: string; productId: string; qty: number; reference: string | null }): Promise<AssignStockResult> => {
+      const { data, error } = await supabase.rpc('assign_stock', {
+        p_key: input.key, p_branch_id: input.branchId, p_product_id: input.productId,
+        p_qty: input.qty, p_reference: input.reference,
+      })
+      if (error) throw error
+      return data as unknown as AssignStockResult
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['inventory'] })
+      void qc.invalidateQueries({ queryKey: ['dashboard'] })
+      void qc.invalidateQueries({ queryKey: ['home'] })
+    },
+  })
+}
