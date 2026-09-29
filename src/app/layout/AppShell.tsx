@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router'
-import { LogOut } from 'lucide-react'
+import { LogOut, Menu } from 'lucide-react'
 import { OfflineBanner } from '@/components/ui/OfflineBanner'
+import { Dialog } from '@/components/ui/Dialog'
 import { useCurrentProfile } from '@/app/guards'
 import { signOut } from '@/features/auth/session'
 import { ActiveBranchProvider } from '@/features/branches/activeBranch'
@@ -39,7 +41,13 @@ function BottomLink({ item }: { item: NavItem }) {
 
 export function AppShell() {
   const profile = useCurrentProfile()
+  const [moreOpen, setMoreOpen] = useState(false)
   const items = NAV.filter((i) => !i.adminOnly || profile.role === 'admin')
+  const primaryPaths = profile.role === 'admin'
+    ? ['/inicio', '/inventario', '/transferencias']
+    : ['/inventario', '/transferencias', '/conteos']
+  const primaryItems = items.filter((i) => primaryPaths.includes(i.to))
+  const moreItems = items.filter((i) => !primaryPaths.includes(i.to))
   return (
     <ActiveBranchProvider>
       <div className="min-h-dvh md:grid md:grid-cols-[16rem_1fr]">
@@ -75,10 +83,22 @@ export function AppShell() {
             aria-label="Navegación principal"
             className="fixed inset-x-0 bottom-0 z-10 flex border-t border-hairline bg-surface md:hidden"
           >
-            {items.map((i) => (
+            {primaryItems.map((i) => (
               <BottomLink key={i.to} item={i} />
             ))}
+            {moreItems.length > 0 && <button type="button" onClick={() => setMoreOpen(true)}
+              aria-label="Más secciones" className="flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-semibold text-muted">
+              <Menu size={20} aria-hidden />Más
+            </button>}
           </nav>
+          <Dialog open={moreOpen} onClose={() => setMoreOpen(false)} title="Más secciones">
+            <nav aria-label="Más secciones" className="grid grid-cols-2 gap-2">
+              {moreItems.map((item) => <NavLink key={item.to} to={item.to} onClick={() => setMoreOpen(false)}
+                className="flex min-h-12 items-center gap-2 rounded-control border border-hairline px-3 text-sm font-semibold hover:bg-canvas">
+                <item.icon size={18} aria-hidden />{item.label}
+              </NavLink>)}
+            </nav>
+          </Dialog>
         </div>
       </div>
     </ActiveBranchProvider>

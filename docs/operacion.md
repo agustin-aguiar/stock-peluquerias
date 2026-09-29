@@ -69,6 +69,10 @@ npm run test:db   # integración: crea y borra una cadena de prueba en el proyec
 
 Las pruebas de integración crean usuarios Auth temporales (`*@example.com`) y los borran al terminar. Si una corrida se corta, borrar a mano en Authentication → Users los que empiecen con `admin-`, `opa-`, `opb-`, `opc-`.
 
+`tests/db/pilot.test.ts` comprueba con una cadena temporal que una tercera sucursal mantiene permisos y saldos separados, permite una transferencia y conserva auditoría de cambios. Esto no sustituye el piloto con personas ni la restauración en otro entorno.
+
+El administrador puede revisar los eventos de cambio en `/auditoria`, con filtros por área y fecha. Los operadores no tienen acceso a esa pantalla ni a los eventos por RLS.
+
 ## 7. Despliegue en Vercel
 
 Proyecto actual: `agustin-aguiars-projects/stock-peluquerias`. URL pública: https://stock-peluquerias.vercel.app

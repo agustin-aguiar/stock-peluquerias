@@ -30,3 +30,11 @@ Plantilla por semana (plan §24.1). Una entrada por semana de trabajo.
 - **Validación:** 44 pruebas unitarias y 59 pruebas de integración aprobadas en Supabase; TypeScript, ESLint y build correctos. Tras las pruebas quedaron 1 cadena, 52 productos, 3 usuarios Auth y 0 diferencias entre saldos y movimientos.
 - **Entorno:** el proyecto Supabase usado por Vercel estaba pausado; se reactivó y se aplicaron migraciones 0006–0009 sin recrear la cadena demo.
 - **Próximo paso:** publicar el frontend, verificar el despliegue y realizar un recorrido manual con ambos roles. Luego cerrar correo, invitaciones y las pruebas del piloto.
+
+## Semana 10 (Construcción 7, avance) — 2026-09-29
+
+- **Objetivo:** comenzar las pruebas de extensibilidad y trazabilidad del piloto.
+- **Implementado:** vista de auditoría para administradores con filtros y detalle del cambio; navegación móvil con accesos principales y menú «Más» para que las secciones no compitan por el ancho de 360 px.
+- **Pruebas:** `tests/db/pilot.test.ts` comprueba CP-23 en una tercera sucursal temporal: operador propio, aislamiento de lectura y escritura, saldos y recepción de transferencia. También comprueba CP-31 para cambios de mínimos, producto y perfil, y que el operador no lea auditoría.
+- **Validación:** 44 pruebas unitarias, 2 nuevas pruebas de integración, TypeScript, ESLint y build aprobados. La prueba de navegador con ambas cuentas queda pendiente; se verificó que la app local abre el login.
+- **Pendiente de C7:** piloto guiado con personas, medición con 20 sesiones y unos 5.000 movimientos, respaldo y restauración en ambiente separado, recorrido de teclado/celular autenticado. El correo de SP4 permanece pendiente por decisión del usuario.

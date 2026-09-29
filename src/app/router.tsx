@@ -17,6 +17,7 @@ import { TransferenciasPage } from '@/features/transfers/TransferenciasPage'
 import { TableroPage } from '@/features/dashboard/TableroPage'
 import { ConteosPage } from '@/features/counts/ConteosPage'
 import { ImportacionesPage } from '@/features/imports/ImportacionesPage'
+import { AuditoriaPage } from '@/features/audit/AuditoriaPage'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
                   { path: 'catalogo/:productId', element: <ProductoFormPage /> },
                   { path: 'sucursales', element: <SucursalesPage /> },
                   { path: 'usuarios', element: <UsuariosPage /> },
+                  { path: 'auditoria', element: <AuditoriaPage /> },
                 ],
               },
               { path: '403', element: <ForbiddenPage /> },
