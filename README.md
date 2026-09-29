@@ -3,7 +3,7 @@
 Control de stock para una cadena de peluquerías con varias sucursales. Proyecto académico (IET, ORT Uruguay, 2026).
 Aplicación web (React + Vite) sobre Supabase (PostgreSQL, Auth, RLS). Las escrituras pasan solo por funciones PostgreSQL que validan rol, sucursal y cantidades y registran auditoría.
 
-Estado: SP1 (fundación y catálogo). Ver `docs/superpowers/specs/` y `docs/referencia/plan-v1.md`.
+Estado: SP1–SP3 implementados; SP4 incluye tablero, conteos físicos y CSV. El resumen diario por correo y las invitaciones por email siguen pendientes. Ver `docs/referencia/plan-v1.md` y `docs/bitacora.md`.
 
 - Repositorio: https://github.com/agustin-aguiar/stock-peluquerias
 - Aplicación publicada: https://stock-peluquerias.vercel.app (cada push a `main` despliega automáticamente)
@@ -35,7 +35,7 @@ cp .env.example .env.local        # completar con URL y anon key del proyecto
 
 ## Estructura
 
-- `src/features/*`: una carpeta por área (auth, branches, users, products, inventory, home).
+- `src/features/*`: una carpeta por área (auth, branches, users, products, inventory, transfers, counts, dashboard, imports, home).
 - `src/components/ui`: primitivas del design system.
 - `src/lib`: cliente Supabase, cantidades, errores, validación.
 - `supabase/migrations`: esquema, RLS y RPC en orden. `supabase/seed.sql`: datos demo.

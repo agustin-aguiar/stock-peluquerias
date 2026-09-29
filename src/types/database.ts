@@ -754,6 +754,40 @@ export type Database = {
       }
     }
     Functions: {
+      import_csv_batch: { Args: { p_id: string; p_kind: string; p_rows: Json }; Returns: Json }
+      submit_physical_count: { Args: { p_id: string; p_branch_id: string; p_product_id: string; p_observed_qty: number; p_note?: string | null }; Returns: Json }
+      approve_physical_count: { Args: { p_count_id: string }; Returns: Json }
+      reject_physical_count: { Args: { p_count_id: string; p_reason: string }; Returns: Json }
+      list_physical_counts: { Args: { p_status?: string }; Returns: Json }
+      dashboard_snapshot: { Args: { p_from: string; p_to: string }; Returns: Json }
+      create_transfer: {
+        Args: { p_id: string; p_product_id: string; p_from_branch_id: string; p_to_branch_id: string; p_qty: number; p_shipping_ref?: string | null }
+        Returns: Database['public']['Tables']['transfers']['Row']
+      }
+      cancel_transfer: { Args: { p_transfer_id: string }; Returns: Database['public']['Tables']['transfers']['Row'] }
+      dispatch_transfer: { Args: { p_key: string; p_transfer_id: string }; Returns: Json }
+      receive_transfer: { Args: { p_key: string; p_transfer_id: string }; Returns: Json }
+      report_transfer_difference: { Args: { p_transfer_id: string; p_note: string }; Returns: Database['public']['Tables']['transfers']['Row'] }
+      resolve_transfer: {
+        Args: { p_key: string; p_transfer_id: string; p_qty_received: number; p_qty_returned: number; p_qty_lost: number; p_note: string }
+        Returns: Json
+      }
+      register_movement: {
+        Args: {
+          p_key: string
+          p_type: Database["public"]["Enums"]["operation_type"]
+          p_branch_id: string
+          p_product_id: string
+          p_qty: number
+          p_reason?: string | null
+          p_reference?: string | null
+        }
+        Returns: Json
+      }
+      reverse_movement: {
+        Args: { p_key: string; p_movement_id: string; p_reason: string }
+        Returns: Json
+      }
       assert_active: {
         Args: never
         Returns: {

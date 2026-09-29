@@ -13,3 +13,20 @@ Plantilla por semana (plan §24.1). Una entrada por semana de trabajo.
 - **Validación:** conciliación saldo vs. movimientos = 0 diferencias sobre la cadena demo (50 SKU, 100 filas, 11 alertas abiertas); revisión final del branch sin hallazgos críticos; pendientes menores registrados para SP2.
 - **Tiempo real:** (completar horas-persona)
 - **Próximo paso:** SP2 movimientos (ingreso, consumo, venta, merma, ajuste, reversión) con concurrencia e idempotencia.
+
+## Semana 6 (Construcción 3) — 2026-09-29
+
+- **Objetivo:** SP2 movimientos operativos e integridad del saldo.
+- **Implementado en el checkout:** migración `0006_rpc_movements.sql` para ingreso, consumo, venta, merma, ajuste y reversión; bloqueo transaccional de inventario y clave de idempotencia; control de permisos, cantidad, saldo y motivo; auditoría y alertas. La ficha de producto permite registrar movimientos y consultar historial filtrado por sucursal, tipo y fecha. El administrador puede solicitar una reversión completa.
+- **Pruebas agregadas:** `tests/db/movements.test.ts` cubre CP-02, 06–11, 18, 19 y 22, incluyendo retiros concurrentes, reintentos y consulta del resultado por clave.
+- **Validación local:** TypeScript, ESLint, build de Vite y 39 pruebas unitarias correctas. Las pruebas de base no se ejecutaron: falta `.env.test.local` y este equipo no tiene Docker. La migración aún no está aplicada a Supabase ni el código publicado.
+- **Próximo paso:** aplicar la migración en un proyecto de prueba, ejecutar `npm run test:db`, corregir cualquier diferencia observada y realizar el recorrido de aceptación con ambos roles antes de publicar.
+
+## Semanas 7–9 (Construcción 4–6, avance) — 2026-09-29
+
+- **SP3:** transferencias de un SKU con borrador, cancelación, despacho, tránsito, recepción, reporte y resolución de diferencias. Las RPC bloquean filas y conservan las cantidades; la interfaz muestra solo las acciones permitidas por rol y estado.
+- **SP4 implementado:** tablero por período sin sumar unidades incompatibles, conteos físicos con aprobación por versión, importación atómica de catálogo y saldos iniciales (hasta 500 filas), vista previa CSV y exportación protegida contra fórmulas.
+- **SP4 pendiente:** resumen diario por correo (Resend, cron, destinatario y pruebas de entrega), invitaciones por email y pruebas de navegador/piloto. No hay configuración de correo para afirmar que estas funciones funcionan.
+- **Validación:** 44 pruebas unitarias y 59 pruebas de integración aprobadas en Supabase; TypeScript, ESLint y build correctos. Tras las pruebas quedaron 1 cadena, 52 productos, 3 usuarios Auth y 0 diferencias entre saldos y movimientos.
+- **Entorno:** el proyecto Supabase usado por Vercel estaba pausado; se reactivó y se aplicaron migraciones 0006–0009 sin recrear la cadena demo.
+- **Próximo paso:** publicar el frontend, verificar el despliegue y realizar un recorrido manual con ambos roles. Luego cerrar correo, invitaciones y las pruebas del piloto.

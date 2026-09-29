@@ -56,6 +56,12 @@ Desactivar un usuario (`/usuarios` → editar → "Usuario activo" apagado) bloq
 
 ## 6. Pruebas
 
+Para SP2, aplicar primero la migración `0006_rpc_movements.sql` al proyecto de prueba. La interfaz llama las RPC `register_movement` y `reverse_movement`; sin esa migración, los formularios mostrarán un error. Usar credenciales de prueba vigentes en `.env.test.local` y ejecutar la batería de integración antes de publicar.
+
+SP3 requiere `0007_rpc_transfers.sql`. El tablero y los conteos requieren `0008_dashboard_counts.sql`; la importación CSV requiere `0009_csv_batches.sql`. Aplicar migraciones en orden antes de desplegar el frontend. No ejecutar `db:seed` sobre la cadena demo existente salvo que se quiera recrearla.
+
+El resumen diario por correo y las invitaciones todavía no están implementados. La aplicación no debe mostrar envíos como realizados hasta configurar Resend, la programación y comprobar recepción real.
+
 ```bash
 npm test          # unitarias
 npm run test:db   # integración: crea y borra una cadena de prueba en el proyecto enlazado

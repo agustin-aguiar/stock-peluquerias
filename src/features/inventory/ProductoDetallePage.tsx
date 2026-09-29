@@ -9,6 +9,8 @@ import { messageFor } from '@/lib/errors'
 import { formatQuantity, UNIT_NAME } from '@/lib/quantity'
 import type { InventoryStatus } from '@/types/models'
 import { SaldoInicialDialog } from './SaldoInicialDialog'
+import { MovementDialog } from './MovementDialog'
+import { MovementHistory } from './MovementHistory'
 import { StatusChip } from './StatusChip'
 
 export function ProductoDetallePage() {
@@ -17,6 +19,7 @@ export function ProductoDetallePage() {
   const product = useProduct(productId)
   const availability = useProductAvailability(productId)
   const [initRow, setInitRow] = useState<InventoryStatus | null>(null)
+  const [movementRow, setMovementRow] = useState<InventoryStatus | null>(null)
 
   if (product.isPending || availability.isPending) return <LoadingState />
   if (product.isError) return <ErrorState message={messageFor(product.error)} onRetry={() => void product.refetch()} />
@@ -69,19 +72,19 @@ export function ProductoDetallePage() {
                   <StatusChip row={r} />
                 </dd>
               </dl>
-              {me.role === 'admin' && !r.initialized_at && (
-                <Button onClick={() => setInitRow(r)}>Registrar saldo inicial</Button>
-              )}
+              {me.role === 'admin' && !r.initialized_at && <Button onClick={() => setInitRow(r)}>Registrar saldo inicial</Button>}
+              {r.initialized_at && r.branch_active && p.is_active &&
+                <Button onClick={() => setMovementRow(r)}>Registrar movimiento</Button>}
             </li>
           ))}
         </ul>
       )}
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold">Historial</h2>
-        <EmptyState title="Disponible en la próxima versión" description="Los movimientos se incorporan en el siguiente incremento." />
-      </section>
+      <MovementHistory product={p} rows={rows} isAdmin={me.role === 'admin'} />
       {initRow && (
         <SaldoInicialDialog open={Boolean(initRow)} onClose={() => setInitRow(null)} product={p} row={initRow} />
+      )}
+      {movementRow && (
+        <MovementDialog open={Boolean(movementRow)} onClose={() => setMovementRow(null)} product={p} row={movementRow} isAdmin={me.role === 'admin'} />
       )}
     </>
   )

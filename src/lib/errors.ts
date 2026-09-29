@@ -28,6 +28,21 @@ export const RPC_MESSAGES: Record<string, string> = {
   branch_required: 'Un operador necesita una sucursal asignada.',
   branch_inactive: 'La sucursal no existe o está inactiva.',
   product_inactive: 'El producto está inactivo.',
+  invalid_type: 'Elegí un tipo de movimiento válido.',
+  invalid_text: 'El motivo o la referencia son demasiado largos.',
+  reason_required: 'Ingresá un motivo.',
+  not_initialized: 'Registrá el saldo inicial antes de operar.',
+  insufficient_stock: 'La cantidad supera el saldo disponible.',
+  not_reversible: 'Este movimiento no admite reversión.',
+  already_reversed: 'Este movimiento ya fue revertido.',
+  invalid_transfer: 'Elegí dos sucursales diferentes.',
+  invalid_transfer_state: 'La transferencia cambió de estado. Actualizá la lista.',
+  transfer_mismatch: 'Recibido, devuelto y merma deben sumar lo despachado.',
+  invalid_count_state: 'El conteo ya fue revisado.',
+  stale_count: 'El saldo cambió desde el conteo. Repetí la observación.',
+  invalid_period: 'Elegí un período válido de hasta un año.',
+  invalid_import: 'El archivo contiene datos inválidos. Revisá la vista previa.',
+  duplicate_import: 'Este contenido ya fue importado.',
 }
 
 export const GENERIC_ERROR = 'Ocurrió un error inesperado. El cambio no se guardó.'

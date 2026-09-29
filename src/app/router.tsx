@@ -13,6 +13,10 @@ import { ProductoDetallePage } from '@/features/inventory/ProductoDetallePage'
 import { CatalogoPage } from '@/features/products/CatalogoPage'
 import { ProductoFormPage } from '@/features/products/ProductoFormPage'
 import { UsuariosPage } from '@/features/users/UsuariosPage'
+import { TransferenciasPage } from '@/features/transfers/TransferenciasPage'
+import { TableroPage } from '@/features/dashboard/TableroPage'
+import { ConteosPage } from '@/features/counts/ConteosPage'
+import { ImportacionesPage } from '@/features/imports/ImportacionesPage'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
@@ -33,10 +37,14 @@ export const router = createBrowserRouter([
               { index: true, element: <HomeRedirect /> },
               { path: 'inventario', element: <InventarioPage /> },
               { path: 'inventario/:productId', element: <ProductoDetallePage /> },
+              { path: 'transferencias', element: <TransferenciasPage /> },
+              { path: 'conteos', element: <ConteosPage /> },
               {
                 element: <RequireRole role="admin" />,
                 children: [
                   { path: 'inicio', element: <InicioAdminPage /> },
+                  { path: 'tablero', element: <TableroPage /> },
+                  { path: 'importaciones', element: <ImportacionesPage /> },
                   { path: 'catalogo', element: <CatalogoPage /> },
                   { path: 'catalogo/nuevo', element: <ProductoFormPage /> },
                   { path: 'catalogo/:productId', element: <ProductoFormPage /> },
