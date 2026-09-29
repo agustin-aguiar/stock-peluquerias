@@ -1,61 +1,68 @@
+import { lazy, Suspense, type ReactNode } from 'react'
 import { createBrowserRouter } from 'react-router'
 import { RequireAuth, RequireProfile, RequireRole } from './guards'
 import { AppShell } from './layout/AppShell'
-import { LoginPage } from '@/features/auth/LoginPage'
-import { RecuperarPage } from '@/features/auth/RecuperarPage'
-import { RestablecerPage } from '@/features/auth/RestablecerPage'
-import { SinPerfilPage } from '@/features/auth/SinPerfilPage'
-import { SucursalesPage } from '@/features/branches/SucursalesPage'
-import { HomeRedirect } from '@/features/home/HomeRedirect'
-import { InicioAdminPage } from '@/features/home/InicioAdminPage'
-import { InventarioPage } from '@/features/inventory/InventarioPage'
-import { ProductoDetallePage } from '@/features/inventory/ProductoDetallePage'
-import { CatalogoPage } from '@/features/products/CatalogoPage'
-import { ProductoFormPage } from '@/features/products/ProductoFormPage'
-import { UsuariosPage } from '@/features/users/UsuariosPage'
-import { TransferenciasPage } from '@/features/transfers/TransferenciasPage'
-import { TableroPage } from '@/features/dashboard/TableroPage'
-import { ConteosPage } from '@/features/counts/ConteosPage'
-import { ImportacionesPage } from '@/features/imports/ImportacionesPage'
-import { AuditoriaPage } from '@/features/audit/AuditoriaPage'
-import { ForbiddenPage } from '@/pages/ForbiddenPage'
-import { NotFoundPage } from '@/pages/NotFoundPage'
+import { LoadingState } from '@/components/ui/States'
+
+const LoginPage = lazy(() => import('@/features/auth/LoginPage').then((m) => ({ default: m.LoginPage })))
+const RecuperarPage = lazy(() => import('@/features/auth/RecuperarPage').then((m) => ({ default: m.RecuperarPage })))
+const RestablecerPage = lazy(() => import('@/features/auth/RestablecerPage').then((m) => ({ default: m.RestablecerPage })))
+const SinPerfilPage = lazy(() => import('@/features/auth/SinPerfilPage').then((m) => ({ default: m.SinPerfilPage })))
+const SucursalesPage = lazy(() => import('@/features/branches/SucursalesPage').then((m) => ({ default: m.SucursalesPage })))
+const HomeRedirect = lazy(() => import('@/features/home/HomeRedirect').then((m) => ({ default: m.HomeRedirect })))
+const InicioAdminPage = lazy(() => import('@/features/home/InicioAdminPage').then((m) => ({ default: m.InicioAdminPage })))
+const InventarioPage = lazy(() => import('@/features/inventory/InventarioPage').then((m) => ({ default: m.InventarioPage })))
+const ProductoDetallePage = lazy(() => import('@/features/inventory/ProductoDetallePage').then((m) => ({ default: m.ProductoDetallePage })))
+const CatalogoPage = lazy(() => import('@/features/products/CatalogoPage').then((m) => ({ default: m.CatalogoPage })))
+const ProductoFormPage = lazy(() => import('@/features/products/ProductoFormPage').then((m) => ({ default: m.ProductoFormPage })))
+const UsuariosPage = lazy(() => import('@/features/users/UsuariosPage').then((m) => ({ default: m.UsuariosPage })))
+const TransferenciasPage = lazy(() => import('@/features/transfers/TransferenciasPage').then((m) => ({ default: m.TransferenciasPage })))
+const TableroPage = lazy(() => import('@/features/dashboard/TableroPage').then((m) => ({ default: m.TableroPage })))
+const ConteosPage = lazy(() => import('@/features/counts/ConteosPage').then((m) => ({ default: m.ConteosPage })))
+const ImportacionesPage = lazy(() => import('@/features/imports/ImportacionesPage').then((m) => ({ default: m.ImportacionesPage })))
+const AuditoriaPage = lazy(() => import('@/features/audit/AuditoriaPage').then((m) => ({ default: m.AuditoriaPage })))
+const ForbiddenPage = lazy(() => import('@/pages/ForbiddenPage').then((m) => ({ default: m.ForbiddenPage })))
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })))
+
+function page(content: ReactNode) {
+  return <Suspense fallback={<LoadingState />}>{content}</Suspense>
+}
 
 export const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
-  { path: '/auth/recuperar', element: <RecuperarPage /> },
-  { path: '/auth/restablecer', element: <RestablecerPage /> },
+  { path: '/login', element: page(<LoginPage />) },
+  { path: '/auth/recuperar', element: page(<RecuperarPage />) },
+  { path: '/auth/restablecer', element: page(<RestablecerPage />) },
   {
     element: <RequireAuth />,
     children: [
-      { path: '/sin-perfil', element: <SinPerfilPage /> },
+      { path: '/sin-perfil', element: page(<SinPerfilPage />) },
       {
         element: <RequireProfile />,
         children: [
           {
             element: <AppShell />,
             children: [
-              { index: true, element: <HomeRedirect /> },
-              { path: 'inventario', element: <InventarioPage /> },
-              { path: 'inventario/:productId', element: <ProductoDetallePage /> },
-              { path: 'transferencias', element: <TransferenciasPage /> },
-              { path: 'conteos', element: <ConteosPage /> },
+              { index: true, element: page(<HomeRedirect />) },
+              { path: 'inventario', element: page(<InventarioPage />) },
+              { path: 'inventario/:productId', element: page(<ProductoDetallePage />) },
+              { path: 'transferencias', element: page(<TransferenciasPage />) },
+              { path: 'conteos', element: page(<ConteosPage />) },
               {
                 element: <RequireRole role="admin" />,
                 children: [
-                  { path: 'inicio', element: <InicioAdminPage /> },
-                  { path: 'tablero', element: <TableroPage /> },
-                  { path: 'importaciones', element: <ImportacionesPage /> },
-                  { path: 'catalogo', element: <CatalogoPage /> },
-                  { path: 'catalogo/nuevo', element: <ProductoFormPage /> },
-                  { path: 'catalogo/:productId', element: <ProductoFormPage /> },
-                  { path: 'sucursales', element: <SucursalesPage /> },
-                  { path: 'usuarios', element: <UsuariosPage /> },
-                  { path: 'auditoria', element: <AuditoriaPage /> },
+                  { path: 'inicio', element: page(<InicioAdminPage />) },
+                  { path: 'tablero', element: page(<TableroPage />) },
+                  { path: 'importaciones', element: page(<ImportacionesPage />) },
+                  { path: 'catalogo', element: page(<CatalogoPage />) },
+                  { path: 'catalogo/nuevo', element: page(<ProductoFormPage />) },
+                  { path: 'catalogo/:productId', element: page(<ProductoFormPage />) },
+                  { path: 'sucursales', element: page(<SucursalesPage />) },
+                  { path: 'usuarios', element: page(<UsuariosPage />) },
+                  { path: 'auditoria', element: page(<AuditoriaPage />) },
                 ],
               },
-              { path: '403', element: <ForbiddenPage /> },
-              { path: '*', element: <NotFoundPage /> },
+              { path: '403', element: page(<ForbiddenPage />) },
+              { path: '*', element: page(<NotFoundPage />) },
             ],
           },
         ],
