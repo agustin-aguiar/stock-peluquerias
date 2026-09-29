@@ -104,13 +104,17 @@ export function QuickStockDialog({ open, onClose, selection }: Props) {
         </fieldset>}
         <Input label={mode === 'packages' ? `Envases (${formatQuantity(Number(product.presentation_qty), product.unit)} cada uno)` : `Cantidad (${UNIT_LABEL[product.unit]})`}
           value={amount} onChange={(e) => setAmount(e.target.value)} inputMode={mode === 'packages' || product.unit === 'unit' ? 'numeric' : 'decimal'}
-          hint={mode === 'packages' || product.unit === 'unit' ? 'Solo enteros.' : 'Hasta dos decimales; por ejemplo 25,50.'} />
+          hint={`${mode === 'packages' || product.unit === 'unit' ? 'Solo enteros.' : 'Hasta dos decimales; por ejemplo 25,50.'} Máximo por carga: ${formatQuantity(Number(product.max_movement_qty), product.unit)}.`} />
         <Input label="Proveedor o referencia (opcional)" value={reference} onChange={(e) => setReference(e.target.value)} maxLength={120} />
         {branchId && <div className="rounded-control border border-hairline bg-canvas p-3 text-sm" aria-live="polite">
           <p>{availability.isPending ? 'Consultando saldo…' : isInitial ? 'Primera carga en esta sucursal' : 'Se suma al saldo existente'}</p>
           {mode === 'packages' && parsed.ok && <p>{amount} envases = {formatQuantity(qty, product.unit)}</p>}
           {!availability.isPending && <p className="mt-1">Saldo actual: <strong>{formatQuantity(Number(row?.balance ?? 0), product.unit)}</strong>
             {' · '}Saldo después: <strong>{parsed.ok ? formatQuantity(proposedBalance, product.unit) : '—'}</strong></p>}
+        </div>}
+        {parsed.ok && qty > Number(product.max_movement_qty) && <p role="alert" className="text-sm text-carmine-fg">La cantidad supera el máximo por carga.</p>}
+        {availability.isError && <div role="alert" className="flex items-center gap-2 text-sm text-carmine-fg">
+          {messageFor(availability.error)} <Button variant="secondary" onClick={() => void availability.refetch()}>Reintentar</Button>
         </div>}
       </>}
       {error && <p role="alert" className="text-sm text-carmine-fg">{error}</p>}
