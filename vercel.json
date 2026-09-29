@@ -1,1 +1,4 @@
-{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }
+{
+  "crons": [{ "path": "/api/daily-low-stock", "schedule": "0 11 * * *" }],
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}

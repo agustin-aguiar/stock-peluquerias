@@ -58,11 +58,11 @@ Desactivar un usuario (`/usuarios` → editar → "Usuario activo" apagado) bloq
 
 Para SP2, aplicar primero la migración `0006_rpc_movements.sql` al proyecto de prueba. La interfaz llama las RPC `register_movement` y `reverse_movement`; sin esa migración, los formularios mostrarán un error. Usar credenciales de prueba vigentes en `.env.test.local` y ejecutar la batería de integración antes de publicar.
 
-SP3 requiere `0007_rpc_transfers.sql`. El tablero y los conteos requieren `0008_dashboard_counts.sql`; la importación CSV requiere `0009_csv_batches.sql`. La carga directa de stock desde Inventario requiere `0010_rpc_assign_stock.sql` y `0011_fix_assign_stock_type.sql`. Aplicar migraciones en orden antes de desplegar el frontend. No ejecutar `db:seed` sobre la cadena demo existente salvo que se quiera recrearla.
+SP3 requiere `0007_rpc_transfers.sql`. El tablero y los conteos requieren `0008_dashboard_counts.sql`; la importación CSV requiere `0009_csv_batches.sql`. La carga directa de stock desde Inventario requiere `0010_rpc_assign_stock.sql` y `0011_fix_assign_stock_type.sql`. El correo diario requiere `0012_daily_low_stock_emails.sql`. Aplicar migraciones en orden antes de desplegar el frontend. No ejecutar `db:seed` sobre la cadena demo existente salvo que se quiera recrearla.
 
 En Inventario, el administrador puede pulsar «Asignar stock», elegir sucursal y producto, y cargar cantidad o envases. Si el producto no estaba habilitado, la operación lo habilita y registra el saldo inicial; si ya tenía saldo, registra un ingreso. Cada envío usa una clave de reintento para evitar duplicados.
 
-El resumen diario por correo y las invitaciones todavía no están implementados. La aplicación no debe mostrar envíos como realizados hasta configurar Resend, la programación y comprobar recepción real.
+El resumen diario por correo usa Brevo y está implementado en `/api/daily-low-stock`; no afirmar que entrega correos hasta configurar las variables privadas y comprobar recepción real. Las invitaciones desde `/usuarios` todavía no están implementadas; configurar SMTP en Supabase solo habilita los correos de Auth (recuperación e invitaciones emitidas desde Supabase).
 
 ```bash
 npm test          # unitarias
@@ -84,7 +84,7 @@ Proyecto actual: `agustin-aguiars-projects/stock-peluquerias`. URL pública: htt
    ```bash
    vercel link --yes --scope agustin-aguiars-projects --project stock-peluquerias
    ```
-3. Variables de entorno (solo la URL y la clave publicable; la `service_role` nunca va a Vercel). Para Production se cargan por CLI leyendo el valor desde `.env.local`:
+3. Variables públicas del frontend: `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`. Para Production se cargan por CLI leyendo el valor desde `.env.local`:
    ```bash
    grep '^VITE_SUPABASE_URL=' .env.local | cut -d= -f2- | tr -d '\r\n' | vercel env add VITE_SUPABASE_URL production
    grep '^VITE_SUPABASE_ANON_KEY=' .env.local | cut -d= -f2- | tr -d '\r\n' | vercel env add VITE_SUPABASE_ANON_KEY production
@@ -94,6 +94,25 @@ Proyecto actual: `agustin-aguiars-projects/stock-peluquerias`. URL pública: htt
 5. Agregar `https://stock-peluquerias.vercel.app/auth/restablecer` a Redirect URLs de Supabase (sección 1).
 
 `vercel.json` reescribe todas las rutas a `index.html` (SPA); verificado con `/inventario` respondiendo 200.
+
+### Resumen diario de stock bajo por correo
+
+La función de Vercel se ejecuta una vez al día, a las 11:00 UTC (aproximadamente 08:00 en Montevideo; en Hobby puede dispararse en cualquier minuto de esa hora). Envía un resumen por cadena a cada administrador **activo, con cuenta Auth vinculada y correo real**. Solo incluye productos y sucursales activos con saldo inicial registrado y saldo menor o igual al mínimo. Si no hay faltantes, no envía nada. Los perfiles `@example.com` de la demo se excluyen.
+
+En **Vercel → proyecto → Settings → Environment Variables**, cargar para **Production**:
+
+| Nombre | Valor | Uso |
+|---|---|---|
+| `BREVO_API_KEY` | API key normal de Brevo (no SMTP ni MCP) | Envío transaccional |
+| `BREVO_SENDER_EMAIL` | Dirección verificada como remitente en Brevo | Campo «De» |
+| `SUPABASE_SECRET_KEY` | Clave secreta (`sb_secret_...`) del proyecto Supabase usado por la app, en Settings → API Keys | Leer todos los locales y registrar envíos |
+| `CRON_SECRET` | Cadena aleatoria de al menos 16 caracteres | Vercel la envía en Authorization al cron |
+
+La función usa `VITE_SUPABASE_URL` ya cargada; alternativamente acepta `SUPABASE_URL`. También admite la clave heredada `SUPABASE_SERVICE_ROLE_KEY` si el proyecto aún no tiene una clave secreta nueva. **Ninguna clave privada debe empezar con `VITE_`**, entrar al repositorio ni estar disponible en el navegador. Tras cambiar variables, volver a desplegar Production para que la función las reciba. Mantener `CRON_SECRET` y `SUPABASE_SECRET_KEY` solo en Production. La clave secreta salta RLS, por eso el endpoint comprueba `CRON_SECRET` antes de crear el cliente de Supabase y nunca imprime ni devuelve secretos.
+
+La migración `0012` crea un registro privado por cadena, fecha local y destinatario para evitar correos repetidos. Reintentos fallidos pueden ejecutarse otra vez; Brevo recibe además una clave de idempotencia con vigencia de 30 minutos. Consultar **Vercel → Cron Jobs / Logs**, **Brevo → Transactional → Logs** y la tabla `daily_low_stock_emails` para comprobar el resultado.
+
+Para una prueba real, crear un perfil administrador con un email propio en `/usuarios`, luego una cuenta Auth con el mismo email en Supabase → Authentication → Users. Verificar que el perfil ya no muestre «Sin cuenta». Comprobar que existe al menos un saldo inicial bajo mínimo. Ejecutar la ruta con `Authorization: Bearer <CRON_SECRET>` desde una herramienta privada o esperar al cron; nunca colocar el secreto en una URL ni compartirlo por chat. La respuesta `sent: 1` significa aceptación de Brevo, no entrega final: confirmar el evento `Delivered` en Brevo y la recepción en el buzón.
 
 ### Integración con GitHub
 

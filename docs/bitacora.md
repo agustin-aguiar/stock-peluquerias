@@ -47,3 +47,11 @@ Plantilla por semana (plan §24.1). Una entrada por semana de trabajo.
 - **Respaldo:** la CLI de Supabase no pudo generar un dump en este equipo porque no hay Docker ni Podman. Las migraciones nuevas solo agregan/reemplazan la función y no cambian datos existentes. La prueba de respaldo y restauración de C7 sigue pendiente.
 - **Preparación C8:** se redactó `docs/demo-10-minutos.md` con un recorrido de ambos roles basado en funciones verificadas. El ensayo real y las capturas finales siguen pendientes.
 - **Carga inicial:** las pantallas se separaron por ruta. El archivo JS principal de la compilación con configuración real bajó de 768,53 kB a 259,63 kB; las secciones se descargan al abrirlas. Se comprobó en navegador local que `/inventario` redirige al acceso sin sesión y que acceso/recuperación cargan correctamente. Es una mejora de descarga, no una medición de RNF-03 con 20 sesiones.
+
+## Correo diario de stock bajo — 2026-09-29
+
+- **Pedido:** aprovechar la cuenta gratuita de Brevo para avisar por correo a los administradores cuando haya productos bajo mínimo.
+- **Implementado:** función privada de Vercel que agrupa saldos bajos por cadena y envía un resumen diario a administradores activos con cuenta vinculada y correo real. Registro privado por destinatario y fecha local para evitar repeticiones, reserva atómica para ejecuciones simultáneas y clave de idempotencia de Brevo para reintentos próximos.
+- **Seguridad:** `CRON_SECRET` protege la ruta; la API key de Brevo y la clave `service_role` solo se leen en el servidor. Los perfiles demo `@example.com` no reciben mensajes.
+- **Base de datos:** migración `0012_daily_low_stock_emails.sql` aplicada al proyecto Supabase vinculado. No se recreó el seed.
+- **Validación:** 49 pruebas unitarias, TypeScript, ESLint y build correctos. La prueba de integración de la nueva reserva y la recepción real quedan pendientes de una ejecución con credenciales autorizadas y las variables privadas cargadas en Vercel.
