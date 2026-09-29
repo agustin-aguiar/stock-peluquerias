@@ -58,7 +58,7 @@ Desactivar un usuario (`/usuarios` → editar → "Usuario activo" apagado) bloq
 
 Para SP2, aplicar primero la migración `0006_rpc_movements.sql` al proyecto de prueba. La interfaz llama las RPC `register_movement` y `reverse_movement`; sin esa migración, los formularios mostrarán un error. Usar credenciales de prueba vigentes en `.env.test.local` y ejecutar la batería de integración antes de publicar.
 
-SP3 requiere `0007_rpc_transfers.sql`. El tablero y los conteos requieren `0008_dashboard_counts.sql`; la importación CSV requiere `0009_csv_batches.sql`. La carga directa de stock desde Inventario requiere `0010_rpc_assign_stock.sql` y `0011_fix_assign_stock_type.sql`. El correo diario requiere `0012_daily_low_stock_emails.sql`. Aplicar migraciones en orden antes de desplegar el frontend. No ejecutar `db:seed` sobre la cadena demo existente salvo que se quiera recrearla.
+SP3 requiere `0007_rpc_transfers.sql`. El tablero y los conteos requieren `0008_dashboard_counts.sql`; la importación CSV requiere `0009_csv_batches.sql`. La carga directa de stock desde Inventario requiere `0010_rpc_assign_stock.sql` y `0011_fix_assign_stock_type.sql`. El correo diario requiere `0012_daily_low_stock_emails.sql` y `0013_daily_mail_invoker.sql`. Aplicar migraciones en orden antes de desplegar el frontend. No ejecutar `db:seed` sobre la cadena demo existente salvo que se quiera recrearla.
 
 En Inventario, el administrador puede pulsar «Asignar stock», elegir sucursal y producto, y cargar cantidad o envases. Si el producto no estaba habilitado, la operación lo habilita y registra el saldo inicial; si ya tenía saldo, registra un ingreso. Cada envío usa una clave de reintento para evitar duplicados.
 

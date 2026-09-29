@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dailyMessage, localDate, type LowStockRow } from '../../server/daily-low-stock'
+import { dailyMessage, localDate, type LowStockRow } from '../../api/daily-low-stock'
 
 const row: LowStockRow = {
   chain_id: 'chain', branch_code: 'POC', branch_name: 'Pocitos',
