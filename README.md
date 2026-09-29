@@ -5,6 +5,8 @@ Aplicación web (React + Vite) sobre Supabase (PostgreSQL, Auth, RLS). Las escri
 
 Estado: SP1–SP3 implementados; SP4 incluye tablero, conteos físicos y CSV. Inventario permite asignar stock directamente a una sucursal: habilita el producto y registra saldo inicial o ingreso en una sola operación. C7 comenzó con una prueba de tercera sucursal, una vista de auditoría y navegación móvil mejorada. El resumen diario por correo y las invitaciones por email siguen pendientes. Ver `docs/referencia/plan-v1.md` y `docs/bitacora.md`.
 
+Para ensayar la entrega: `docs/demo-10-minutos.md`.
+
 - Repositorio: https://github.com/agustin-aguiar/stock-peluquerias
 - Aplicación publicada: https://stock-peluquerias.vercel.app (cada push a `main` despliega automáticamente)
 
