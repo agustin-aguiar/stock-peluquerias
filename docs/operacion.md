@@ -97,7 +97,7 @@ Proyecto actual: `agustin-aguiars-projects/stock-peluquerias`. URL pública: htt
 
 ### Resumen diario de stock bajo por correo
 
-La función de Vercel se ejecuta una vez al día, a las 11:00 UTC (aproximadamente 08:00 en Montevideo; en Hobby puede dispararse en cualquier minuto de esa hora). Envía un resumen por cadena a cada administrador **activo, con cuenta Auth vinculada y correo real**. Solo incluye productos y sucursales activos con saldo inicial registrado y saldo menor o igual al mínimo. Si no hay faltantes, no envía nada. Los perfiles `@example.com` de la demo se excluyen.
+La función de Vercel se ejecuta una vez al día, a las 11:00 UTC (aproximadamente 08:00 en Montevideo; en Hobby puede dispararse en cualquier minuto de esa hora). Envía un resumen por cadena a cada administrador **activo, con cuenta Auth vinculada y correo real**. También admite un destinatario explícito limitado a una cadena, útil mientras la demo no tiene administradores con correo real. Un correo que aparezca por ambas vías recibe una sola copia. Solo incluye productos y sucursales activos con saldo inicial registrado y saldo menor o igual al mínimo. Si no hay faltantes, no envía nada. Los perfiles `@example.com` de la demo se excluyen.
 
 En **Vercel → proyecto → Settings → Environment Variables**, cargar para **Production**:
 
@@ -107,12 +107,14 @@ En **Vercel → proyecto → Settings → Environment Variables**, cargar para *
 | `BREVO_SENDER_EMAIL` | Dirección verificada como remitente en Brevo | Campo «De» |
 | `SUPABASE_SECRET_KEY` | Clave secreta (`sb_secret_...`) del proyecto Supabase usado por la app, en Settings → API Keys | Leer todos los locales y registrar envíos |
 | `CRON_SECRET` | Cadena aleatoria de al menos 16 caracteres | Vercel la envía en Authorization al cron |
+| `LOW_STOCK_RECIPIENT_EMAIL` | Correo que recibirá el resumen sin ser administrador de la app | Destinatario explícito opcional |
+| `LOW_STOCK_CHAIN_ID` | UUID de la cadena cuyos datos puede recibir ese correo | Alcance obligatorio si se configura el destinatario |
 
 La función usa `VITE_SUPABASE_URL` ya cargada; alternativamente acepta `SUPABASE_URL`. También admite la clave heredada `SUPABASE_SERVICE_ROLE_KEY` si el proyecto aún no tiene una clave secreta nueva. **Ninguna clave privada debe empezar con `VITE_`**, entrar al repositorio ni estar disponible en el navegador. Tras cambiar variables, volver a desplegar Production para que la función las reciba. Mantener `CRON_SECRET` y `SUPABASE_SECRET_KEY` solo en Production. La clave secreta salta RLS, por eso el endpoint comprueba `CRON_SECRET` antes de crear el cliente de Supabase y nunca imprime ni devuelve secretos.
 
 La migración `0012` crea un registro privado por cadena, fecha local y destinatario para evitar correos repetidos. Reintentos fallidos pueden ejecutarse otra vez; Brevo recibe además una clave de idempotencia con vigencia de 30 minutos. Consultar **Vercel → Cron Jobs / Logs**, **Brevo → Transactional → Logs** y la tabla `daily_low_stock_emails` para comprobar el resultado.
 
-Para una prueba real, crear un perfil administrador con un email propio en `/usuarios`, luego una cuenta Auth con el mismo email en Supabase → Authentication → Users. Verificar que el perfil ya no muestre «Sin cuenta». Comprobar que existe al menos un saldo inicial bajo mínimo. Ejecutar la ruta con `Authorization: Bearer <CRON_SECRET>` desde una herramienta privada o esperar al cron; nunca colocar el secreto en una URL ni compartirlo por chat. La respuesta `sent: 1` significa aceptación de Brevo, no entrega final: confirmar el evento `Delivered` en Brevo y la recepción en el buzón.
+Para una prueba real, configurar ambas variables del destinatario explícito, o crear un perfil administrador con un email propio en `/usuarios` y una cuenta Auth con el mismo email en Supabase → Authentication → Users. Verificar que existe al menos un saldo inicial bajo mínimo. Ejecutar la ruta con `Authorization: Bearer <CRON_SECRET>` desde una herramienta privada o esperar al cron; nunca colocar el secreto en una URL ni compartirlo por chat. La respuesta `sent: 1` significa aceptación de Brevo, no entrega final: confirmar el evento `Delivered` en Brevo y la recepción en el buzón.
 
 ### Integración con GitHub
 

@@ -47,8 +47,25 @@ export function dailyMessage(chainName: string, date: string, rows: LowStockRow[
   return { subject: title, text, html }
 }
 
-type Recipient = { chain_id: string; email: string }
+export type Recipient = { chain_id: string; email: string }
 type Chain = { id: string; name: string; timezone: string }
+
+export function resolveRecipients(admins: Recipient[], explicitEmail?: string, explicitChainId?: string): Recipient[] {
+  if (Boolean(explicitEmail) !== Boolean(explicitChainId)) {
+    throw new Error('El destinatario explícito requiere correo y cadena')
+  }
+  const configured = explicitEmail?.trim().toLowerCase()
+  if (configured && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(configured) || !/^[0-9a-f-]{36}$/i.test(explicitChainId!))) {
+    throw new Error('El destinatario explícito no es válido')
+  }
+  const recipients = configured ? [...admins, { chain_id: explicitChainId!, email: configured }] : admins
+  const unique = new Map<string, Recipient>()
+  for (const person of recipients) {
+    const email = person.email.trim().toLowerCase()
+    unique.set(`${person.chain_id}\0${email}`, { chain_id: person.chain_id, email })
+  }
+  return [...unique.values()]
+}
 
 function reply(response: ServerResponse, status: number, body: object) {
   response.statusCode = status
@@ -82,6 +99,12 @@ export default async function handler(request: IncomingMessage, response: Server
   if (!url || !serviceKey || !brevoKey || !senderEmail) {
     return reply(response, 503, { error: 'Faltan variables de correo o base de datos' })
   }
+  let explicitRecipient: Recipient[]
+  try {
+    explicitRecipient = resolveRecipients([], process.env.LOW_STOCK_RECIPIENT_EMAIL, process.env.LOW_STOCK_CHAIN_ID)
+  } catch {
+    return reply(response, 503, { error: 'Destinatario explícito mal configurado' })
+  }
 
   const db = createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -114,6 +137,11 @@ export default async function handler(request: IncomingMessage, response: Server
     const { data: chains, error: chainError } = await db.from('chains').select('id,name,timezone')
     if (chainError) throw chainError
     const chainById = new Map((chains as Chain[]).map((chain) => [chain.id, chain]))
+    const configuredRecipient = explicitRecipient.at(0)
+    if (configuredRecipient && !chainById.has(configuredRecipient.chain_id)) {
+      return reply(response, 503, { error: 'La cadena del destinatario no existe' })
+    }
+    const deliveryRecipients = resolveRecipients(recipients, process.env.LOW_STOCK_RECIPIENT_EMAIL, process.env.LOW_STOCK_CHAIN_ID)
     const rowsByChain = new Map<string, LowStockRow[]>()
     for (const row of rows) {
       const group = rowsByChain.get(row.chain_id) ?? []
@@ -124,7 +152,7 @@ export default async function handler(request: IncomingMessage, response: Server
     let sent = 0
     let skipped = 0
     let failed = 0
-    for (const person of recipients) {
+    for (const person of deliveryRecipients) {
       const chain = chainById.get(person.chain_id)
       const lowStock = rowsByChain.get(person.chain_id)
       if (!chain || !lowStock?.length) continue
