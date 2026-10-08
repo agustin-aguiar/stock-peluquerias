@@ -58,3 +58,9 @@ Plantilla por semana (plan §24.1). Una entrada por semana de trabajo.
 - **Incidente de despliegue:** la primera versión de la función devolvió 500 porque Vercel no resolvió un módulo local importado sin extensión al iniciar la función. Se incorporó esa lógica al archivo de la función y se repitieron TypeScript, ESLint y las 49 pruebas unitarias antes del nuevo despliegue.
 - **Destinatario de la demo:** se añadió una opción de destinatario explícito limitado por `LOW_STOCK_CHAIN_ID`. El usuario autorizó un correo propio para esa cadena; su dirección se configura solo en Vercel. Se evita duplicar el envío cuando coincide con un administrador. Las seis variables necesarias quedaron cargadas en Production. Se añadieron dos pruebas unitarias (51 en total).
 - **Prueba de producción:** la ruta protegida procesó 12 productos bajo mínimo y Brevo aceptó un envío (`sent: 1`, `failed: 0`). Queda por comprobar la entrega final en el buzón o en los registros de Brevo. El registro diario evita repetir el correo para el mismo destinatario y fecha local.
+
+## Auditoría legible — 2026-10-08
+
+- **Pedido:** reemplazar el JSON técnico del detalle por una explicación que indique quién actuó y qué hizo.
+- **Implementado:** cada evento muestra responsable, fecha y una frase sobre el cambio. Cuando corresponde, se pueden desplegar valores anteriores y nuevos con nombres de campos comprensibles; los productos, sucursales y transferencias se identifican por nombre. No se modificó el registro original de auditoría ni el esquema de la base de datos.
+- **Validación:** 56 pruebas unitarias, TypeScript, ESLint y compilación de producción correctos.

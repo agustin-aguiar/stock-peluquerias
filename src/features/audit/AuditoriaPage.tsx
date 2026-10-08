@@ -5,8 +5,8 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/States'
 import { messageFor } from '@/lib/errors'
-import type { Json } from '@/types/database'
-import { AUDIT_PAGE_SIZE, useAuditEvents } from './api'
+import { AUDIT_PAGE_SIZE, useAuditEvents, type AuditEvent, type AuditLookups } from './api'
+import { describeAuditEvent } from './describeEvent'
 
 const entities = [
   { value: '', label: 'Todos' },
@@ -19,27 +19,25 @@ const entities = [
   { value: 'import_batch', label: 'Importaciones' },
 ]
 
-const actions: Record<string, string> = {
-  'branch.create': 'Sucursal creada', 'branch.update': 'Sucursal editada',
-  'product.create': 'Producto creado', 'product.update': 'Producto editado',
-  'profile.create': 'Usuario creado', 'profile.update': 'Usuario editado',
-  'inventory.enable': 'Producto habilitado', 'inventory.set_min': 'Mínimo cambiado',
-  'inventory.initial_balance': 'Saldo inicial', 'inventory.purchase': 'Ingreso',
-  'inventory.consumption': 'Consumo', 'inventory.sale': 'Venta',
-  'inventory.shrinkage': 'Merma', 'inventory.adjustment': 'Ajuste',
-  'inventory.reversal': 'Reversión',
-  'transfer.create': 'Transferencia creada', 'transfer.cancel': 'Transferencia cancelada',
-  'transfer.dispatch': 'Transferencia despachada', 'transfer.receive': 'Transferencia recibida',
-  'transfer.dispute': 'Diferencia informada', 'transfer.resolve': 'Diferencia resuelta',
-  'count.submit': 'Conteo presentado', 'count.approve': 'Conteo aprobado',
-  'count.reject': 'Conteo rechazado', 'import.catalog': 'Catálogo importado',
-  'import.initial_stock': 'Saldo inicial importado',
-}
+function AuditItem({ event, lookups }: { event: AuditEvent; lookups: AuditLookups }) {
+  const description = describeAuditEvent(event, lookups)
+  const actor = event.actor_profile_id
+    ? lookups.actors[event.actor_profile_id] ?? 'Usuario no disponible'
+    : 'Sistema'
 
-function changedFields(before: Json | null, after: Json | null) {
-  if (!after || typeof after !== 'object' || Array.isArray(after)) return []
-  if (!before || typeof before !== 'object' || Array.isArray(before)) return []
-  return Object.keys(after).filter((key) => JSON.stringify(after[key]) !== JSON.stringify(before[key]))
+  return <li className="rounded-lg border border-hairline bg-surface p-4 text-sm">
+    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+      <p><span className="text-muted">Quién: </span><span className="font-semibold">{actor}</span></p>
+      <time className="text-muted" dateTime={event.created_at}>{new Date(event.created_at).toLocaleString('es-UY')}</time>
+    </div>
+    <p className="mt-2"><span className="font-semibold">Qué hizo: </span>{description.summary}</p>
+    {description.changes.length > 0 && <details className="mt-2">
+      <summary className="cursor-pointer text-muted underline">Ver detalles</summary>
+      <ul className="mt-2 list-disc space-y-1 pl-5">
+        {description.changes.map((change) => <li key={change}>{change}</li>)}
+      </ul>
+    </details>}
+  </li>
 }
 
 export function AuditoriaPage() {
@@ -50,7 +48,7 @@ export function AuditoriaPage() {
   const events = useAuditEvents(type, from, to, page)
 
   return <>
-    <PageHeader eyebrow="Control" title="Auditoría" description="Cambios registrados en usuarios, productos, sucursales y stock." />
+    <PageHeader eyebrow="Control" title="Auditoría" description="Consultá quién hizo cada cambio y qué ocurrió con el stock, los usuarios y las sucursales." />
     <div className="mb-5 grid gap-3 md:grid-cols-3">
       <Select label="Área" value={type} onChange={(e) => { setType(e.target.value); setPage(0) }} options={entities} />
       <Input label="Desde" type="date" value={from} onChange={(e) => { setFrom(e.target.value); setPage(0) }} />
@@ -61,19 +59,7 @@ export function AuditoriaPage() {
     {events.isError && <ErrorState message={messageFor(events.error)} onRetry={() => void events.refetch()} />}
     {events.data?.rows.length === 0 && <EmptyState title="Sin cambios para estos filtros" />}
     {events.data && events.data.rows.length > 0 && <>
-      <div className="overflow-x-auto"><table className="w-full min-w-[42rem] border-collapse text-sm">
-        <thead><tr className="label-caps text-left text-muted"><th className="py-2">Fecha</th><th>Acción</th><th>Realizada por</th><th>Detalle</th></tr></thead>
-        <tbody>{events.data.rows.map((event) => <tr key={event.id} className="border-t border-hairline align-top">
-          <td className="py-3 pr-4 whitespace-nowrap">{new Date(event.created_at).toLocaleString('es-UY')}</td>
-          <td className="py-3 pr-4 font-semibold">{actions[event.action] ?? event.action}</td>
-          <td className="py-3 pr-4">{events.data.actors[event.actor_profile_id ?? ''] ?? 'Cuenta anterior'}</td>
-          <td className="py-3"><details><summary className="cursor-pointer underline">Ver cambio</summary>
-            <p className="mt-2 text-xs text-muted">{event.entity_type} · {event.entity_id ?? 'sin identificador'}</p>
-            {changedFields(event.old_values, event.new_values).length > 0 && <p className="mt-1 text-xs">Campos: {changedFields(event.old_values, event.new_values).join(', ')}</p>}
-            <pre className="mt-2 max-h-48 overflow-auto rounded-control bg-canvas p-2 text-xs">{JSON.stringify({ antes: event.old_values, despues: event.new_values }, null, 2)}</pre>
-          </details></td>
-        </tr>)}</tbody>
-      </table></div>
+      <ul className="space-y-3">{events.data.rows.map((event) => <AuditItem key={event.id} event={event} lookups={events.data.lookups} />)}</ul>
       <div className="mt-4 flex items-center justify-between gap-3 text-sm text-muted">
         <span>{page * AUDIT_PAGE_SIZE + 1}–{Math.min((page + 1) * AUDIT_PAGE_SIZE, events.data.count)} de {events.data.count}</span>
         <div className="flex gap-2"><Button variant="secondary" disabled={page === 0} onClick={() => setPage(page - 1)}>Anterior</Button>
