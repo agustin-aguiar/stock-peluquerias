@@ -7,6 +7,8 @@ Estado: SP1–SP3 implementados; SP4 incluye tablero, conteos físicos y CSV. In
 
 Para ensayar la entrega: `docs/demo-10-minutos.md`.
 
+Modelo de datos: [MER interactivo y detalle de entidades y relaciones](docs/mer/README.md).
+
 - Repositorio: https://github.com/agustin-aguiar/stock-peluquerias
 - Aplicación publicada: https://stock-peluquerias.vercel.app (cada push a `main` despliega automáticamente)
 
