@@ -1,9 +1,9 @@
 import { PageHeader } from '@/components/ui/PageHeader'
 
 const steps = [
-  ['1. Preparar productos', 'El administrador carga el producto, indica si se cuenta por unidades, mililitros o gramos y hace una primera carga en cada local que vaya a usarlo.'],
+  ['1. Preparar productos', 'El administrador crea la cadena y los locales, invita a sus encargados y carga los productos. Puede asignar una primera cantidad desde Inventario.'],
   ['2. Registrar lo que pasa', 'Cada local anota entradas, ventas, consumo interno y pérdidas. El sistema actualiza la cantidad disponible.'],
-  ['3. Pedir a otro local', 'Un local pide producto. El administrador elige qué otro local podría enviarlo. Ese local acepta o explica por qué no puede.'],
+  ['3. Pedir a otro local', 'Un local puede pedir incluso un producto que todavía no tiene cargado. El administrador elige qué otro local podría enviarlo. Si ese local no puede, el administrador puede elegir otro.'],
   ['4. Confirmar llegada', 'Cuando el local que envía acepta, la cantidad sale de su stock. El local que recibe confirma la llegada en “Envíos entre locales” y recién entonces se suma a su stock.'],
 ]
 

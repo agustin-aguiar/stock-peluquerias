@@ -777,6 +777,7 @@ export type Database = {
       }
     }
     Functions: {
+      create_my_chain: { Args: { p_chain_name: string; p_full_name: string }; Returns: Database['public']['Tables']['profiles']['Row'] }
       request_stock: { Args: { p_id: string; p_product_id: string; p_qty: number; p_note?: string | null }; Returns: Database['public']['Tables']['stock_requests']['Row'] }
       review_stock_request: { Args: { p_request_id: string; p_source_branch_id?: string | null; p_reason?: string | null }; Returns: Database['public']['Tables']['stock_requests']['Row'] }
       decide_stock_request: { Args: { p_request_id: string; p_accept: boolean; p_reason?: string | null }; Returns: Database['public']['Tables']['stock_requests']['Row'] }

@@ -42,7 +42,7 @@ export function SolicitudesPage() {
   const productById = new Map(products.data?.map((p) => [p.id, p]) ?? [])
   const branchById = new Map(branches.data?.map((b) => [b.id, b]) ?? [])
   const transferById = new Map(transfers.data?.map((t) => [t.id, t]) ?? [])
-  const pending = (requests.data ?? []).filter((r) => admin ? r.status === 'pending_admin' : r.status === 'pending_source' && r.source_branch_id === me.branch_id)
+  const pending = (requests.data ?? []).filter((r) => admin ? ['pending_admin', 'declined'].includes(r.status) : r.status === 'pending_source' && r.source_branch_id === me.branch_id)
   const history = (requests.data ?? []).filter((r) => !pending.includes(r))
 
   function startRequest() {
@@ -115,7 +115,7 @@ export function SolicitudesPage() {
       {row.decision_note && <p className="mt-1 text-sm text-muted">Respuesta: {row.decision_note}</p>}
       {row.transfer_id && <Link to="/transferencias" className="mt-2 inline-block text-sm font-semibold underline">Ver envío y recepción</Link>}
       <div className="mt-3 flex flex-wrap gap-2">
-        {admin && row.status === 'pending_admin' && <>
+        {admin && ['pending_admin', 'declined'].includes(row.status) && <>
           <Button onClick={() => openChoice(row, 'forward')}>Elegir local que envía</Button>
           <Button variant="secondary" onClick={() => openChoice(row, 'reject')}>Rechazar</Button>
         </>}
@@ -157,7 +157,7 @@ export function SolicitudesPage() {
         <Input label={`Cantidad que necesitás (${product ? UNIT_NAME[product.unit] : 'unidades'})`}
           value={qty} onChange={(e) => setQty(e.target.value)} inputMode="decimal" />
         <Input label="Comentario para el administrador (opcional)" value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} />
-        <p className="text-sm text-muted">Para recibir un traslado, el producto ya debe tener una primera carga en tu local. Si falta, pedile al administrador que la registre.</p>
+        <p className="text-sm text-muted">Podés pedir un producto aunque todavía no esté cargado en tu local. Se incorporará al confirmar la recepción.</p>
         {error && <p role="alert" className="text-sm text-carmine-fg">{error}</p>}
         <div className="flex justify-end gap-2"><Button variant="secondary" onClick={() => setCreating(false)}>Volver</Button>
           <Button type="submit" disabled={action.isPending}>Enviar pedido</Button></div>

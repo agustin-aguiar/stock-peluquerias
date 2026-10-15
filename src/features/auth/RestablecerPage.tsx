@@ -31,7 +31,7 @@ export function RestablecerPage() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
-    if (password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres.')
+    if (password.length < 10) return setError('La contraseña debe tener al menos 10 caracteres.')
     if (password !== confirm) return setError('Las contraseñas no coinciden.')
     setPending(true)
     const { error } = await supabase.auth.updateUser({ password })
