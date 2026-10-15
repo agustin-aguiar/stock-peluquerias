@@ -20,7 +20,7 @@
 
 ## Validación disponible en este checkout
 
-Las pruebas unitarias, TypeScript y ESLint se pueden ejecutar sin credenciales. Las pruebas de base agregadas cubren el primer producto solicitado para un local y el alta de cadena, pero requieren `.env.test.local` con un proyecto Supabase aislado. El envío real de una invitación requiere el SMTP de Supabase y las variables privadas en Vercel.
+Las pruebas unitarias, TypeScript y ESLint se pueden ejecutar sin credenciales. Las pruebas de base agregadas cubren pedidos del primer producto en un local, alta de cadena y permisos y revocación de enlaces de sucursal, pero requieren `.env.test.local` con un proyecto Supabase aislado. El envío real de una invitación requiere el SMTP de Supabase y las variables privadas en Vercel.
 
 ## Riesgos a vigilar al abrir el registro
 

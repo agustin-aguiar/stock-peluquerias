@@ -72,3 +72,11 @@ Plantilla por semana (plan §24.1). Una entrada por semana de trabajo.
 - **Cuentas:** página pública de registro con confirmación por correo; función `create_my_chain` que crea cadena y administrador solo para el usuario autenticado y confirmado; invitaciones desde Usuarios mediante una función privada que verifica sesión, administrador activo y pertenencia a la misma cadena. Un correo puede pertenecer a una sola cadena en el modelo actual.
 - **Configuración:** `supabase/config.toml` habilita registro local y exige diez caracteres; la producción requiere habilitar registro y comprobar las Redirect URLs en el dashboard después de aplicar las migraciones. Procedimiento en `docs/lanzamiento-autoservicio-2026-10-15.md`.
 - **Pruebas:** se agregaron casos de primera recepción, reasignación, alta de cadena y controles de acceso a invitaciones. La ejecución de integración sigue pendiente de un proyecto Supabase de pruebas con `.env.test.local`.
+
+## Invitaciones masivas y enlaces de sucursal — 2026-10-15
+
+- **Alta por lote:** desde Usuarios, el administrador elige un local y pega hasta 20 nombres y correos. Se informa el resultado de cada envío. Repetir el lote reutiliza perfiles sin acceso y permite reintentar correos fallidos.
+- **Alta mediante enlace:** desde Sucursales, el administrador emite, copia, renueva o desactiva un enlace. El encargado crea su cuenta, confirma el correo y queda asignado únicamente al local del enlace. El token dura siete días, admite veinte altas y la base controla el cupo con bloqueo de fila.
+- **Seguridad:** `0017_branch_join_links.sql` no concede lectura directa de tokens. Las funciones comprueban administrador activo, correo confirmado, local activo, vencimiento, cupo y ausencia de un perfil previo. Las acciones relevantes quedan en auditoría.
+- **Validación:** 62 pruebas unitarias, TypeScript, ESLint, compilación y GitHub Actions aprobados. Las pruebas de integración nuevas siguen pendientes de un Supabase aislado; no se aplicaron las migraciones ni se publicó este PR en producción.
+- **Detalle y activación:** `docs/ultimos-cambios-2026-10-15.md` y `docs/lanzamiento-autoservicio-2026-10-15.md`.
