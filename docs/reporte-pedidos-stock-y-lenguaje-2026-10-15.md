@@ -35,9 +35,10 @@ Los términos técnicos se conservan donde son parte de los archivos CSV, de la 
 - `npm run build`: compilación de TypeScript y construcción de la web aprobadas.
 - `npm run lint`: sin errores.
 - Se agregó una prueba de integración para el recorrido pedido → revisión → aceptación → recepción, permisos y rechazo. **No se ejecutó**, porque este entorno no tiene `.env.test.local` ni una base de pruebas configurada.
+- En Supabase de producción se realizó un recorrido completo de pedido, asignación, despacho y recepción dentro de una transacción con `ROLLBACK`. La prueba confirmó que el origen se descuenta al enviar y el destino se suma al recibir. Se verificó que no quedó ningún pedido de prueba guardado.
 
 ## Estado de activación
 
-La migración `supabase/migrations/0014_stock_requests.sql` está preparada en el repositorio. **No se aplicó a la base de producción**: la conexión directa PostgreSQL está bloqueada desde esta red y la revisión automática rechazó la ejecución en el editor SQL porque requería una autorización específica para ese cambio persistente. La interfaz oculta **Pedidos de stock** hasta que la tabla sea accesible, de modo que los cambios de lenguaje pueden publicarse sin presentar un recorrido incompleto.
+La migración `supabase/migrations/0014_stock_requests.sql` **se aplicó al proyecto Supabase de producción** después de recibir la autorización explícita. Se comprobó que existen la tabla y las tres funciones, que RLS está activado y que la versión `0014 stock_requests` figura en el historial de migraciones. También se notificó a la API para actualizar su esquema. La interfaz muestra **Pedidos de stock** cuando confirma que la tabla es accesible.
 
-Para activar la función hay que aplicar la migración en el proyecto Supabase vinculado, verificar las pruebas de integración con una base de pruebas y recorrer el caso con los tres perfiles. No se debe registrar la migración como aplicada antes de ejecutarla correctamente.
+**Pendiente de validación adicional:** ejecutar las pruebas automatizadas de base contra un proyecto de pruebas configurado y realizar una aceptación manual con los tres perfiles. La función está activada en la base; el código web llega a producción mediante el despliegue automático de Vercel desde `main`.
