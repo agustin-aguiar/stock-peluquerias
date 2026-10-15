@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Pencil, Plus } from 'lucide-react'
 import { useCurrentProfile } from '@/app/guards'
 import { Button } from '@/components/ui/Button'
@@ -7,26 +8,46 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/States'
 import { useBranches } from '@/features/branches/api'
 import { messageFor } from '@/lib/errors'
+import { useToast } from '@/components/ui/Toast'
 import { ROLE_LABEL, type Profile } from '@/types/models'
 import { useProfiles } from './api'
 import { ProfileDialog } from './ProfileDialog'
+import { inviteProfile } from './invitations'
+import { BulkInviteDialog } from './BulkInviteDialog'
 
 export function UsuariosPage() {
   const me = useCurrentProfile()
+  const toast = useToast()
+  const qc = useQueryClient()
   const profiles = useProfiles()
   const branches = useBranches()
   const [dialog, setDialog] = useState<{ open: boolean; profile: Profile | null }>({ open: false, profile: null })
+  const [inviting, setInviting] = useState<string | null>(null)
+  const [bulkOpen, setBulkOpen] = useState(false)
   const branchName = (id: string | null) => branches.data?.find((b) => b.id === id)?.name ?? '—'
 
   const openNew = () => setDialog({ open: true, profile: null })
   const openEdit = (p: Profile) => setDialog({ open: true, profile: p })
   const close = () => setDialog((d) => ({ ...d, open: false }))
 
+  async function sendInvite(profile: Profile) {
+    setInviting(profile.id)
+    try {
+      await inviteProfile(profile.id)
+      toast.push({ kind: 'success', text: `Invitación enviada a ${profile.email}.` })
+      void qc.invalidateQueries({ queryKey: ['profiles'] })
+    } catch (error) {
+      toast.push({ kind: 'error', text: error instanceof Error ? error.message : messageFor(error) })
+    } finally {
+      setInviting(null)
+    }
+  }
+
   function StatusChips({ p }: { p: Profile }) {
     return (
       <span className="flex flex-wrap gap-1">
         <Chip tone={p.is_active ? 'sage' : 'neutral'}>{p.is_active ? 'Activo' : 'Inactivo'}</Chip>
-        {!p.auth_user_id && <Chip tone="amber">Sin cuenta</Chip>}
+        {!p.auth_user_id && <Chip tone="amber">Sin acceso</Chip>}
       </span>
     )
   }
@@ -36,12 +57,13 @@ export function UsuariosPage() {
       <PageHeader
         eyebrow="Administración"
         title="Usuarios"
-        description='"Sin cuenta" significa que falta crear el acceso en Supabase con ese email.'
-        actions={
+        description="Creá usuarios e invitálos por correo para que elijan su contraseña."
+        actions={<div className="flex gap-2">
+          <Button variant="secondary" onClick={() => setBulkOpen(true)}>Invitar varios</Button>
           <Button onClick={openNew}>
             <Plus size={16} aria-hidden /> Nuevo usuario
           </Button>
-        }
+        </div>}
       />
       {profiles.isPending && <LoadingState />}
       {profiles.isError && <ErrorState message={messageFor(profiles.error)} onRetry={() => void profiles.refetch()} />}
@@ -73,6 +95,9 @@ export function UsuariosPage() {
                     <StatusChips p={p} />
                   </td>
                   <td className="py-3 text-right">
+                    {!p.auth_user_id && p.is_active && <Button variant="secondary" disabled={inviting === p.id} onClick={() => void sendInvite(p)}>
+                      {inviting === p.id ? 'Enviando…' : 'Enviar invitación'}
+                    </Button>}
                     <Button variant="secondary" onClick={() => openEdit(p)} aria-label={`Editar ${p.full_name}`}>
                       <Pencil size={14} aria-hidden /> Editar
                     </Button>
@@ -98,12 +123,16 @@ export function UsuariosPage() {
                 <Button variant="secondary" className="mt-3 w-full" onClick={() => openEdit(p)}>
                   <Pencil size={14} aria-hidden /> Editar
                 </Button>
+                {!p.auth_user_id && p.is_active && <Button variant="secondary" className="mt-2 w-full" disabled={inviting === p.id} onClick={() => void sendInvite(p)}>
+                  {inviting === p.id ? 'Enviando…' : 'Enviar invitación'}
+                </Button>}
               </li>
             ))}
           </ul>
         </>
       )}
       <ProfileDialog open={dialog.open} onClose={close} profile={dialog.profile} isSelf={dialog.profile?.id === me.id} />
+      <BulkInviteDialog open={bulkOpen} onClose={() => setBulkOpen(false)} />
     </>
   )
 }

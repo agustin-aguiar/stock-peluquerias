@@ -64,3 +64,19 @@ Plantilla por semana (plan §24.1). Una entrada por semana de trabajo.
 - **Pedido:** reemplazar el JSON técnico del detalle por una explicación que indique quién actuó y qué hizo.
 - **Implementado:** cada evento muestra responsable, fecha y una frase sobre el cambio. Cuando corresponde, se pueden desplegar valores anteriores y nuevos con nombres de campos comprensibles; los productos, sucursales y transferencias se identifican por nombre. No se modificó el registro original de auditoría ni el esquema de la base de datos.
 - **Validación:** 56 pruebas unitarias, TypeScript, ESLint y compilación de producción correctos.
+
+## Pedidos, alertas y preparación de altas autoservicio — 2026-10-15
+
+- **Pedidos:** un operador puede pedir un producto que aún no está cargado en su local. Al aceptar el envío, el destino se habilita con saldo cero; la recepción suma lo que llegó. El administrador puede volver a asignar un pedido rechazado por el local elegido. La bandeja consulta todos los pendientes por páginas y muestra el historial reciente por separado.
+- **Alertas:** los productos sin primera carga dejan de figurar como agotados o bajos de stock en la vista y el tablero; se cierran las alertas antiguas de ese caso.
+- **Cuentas:** página pública de registro con confirmación por correo; función `create_my_chain` que crea cadena y administrador solo para el usuario autenticado y confirmado; invitaciones desde Usuarios mediante una función privada que verifica sesión, administrador activo y pertenencia a la misma cadena. Un correo puede pertenecer a una sola cadena en el modelo actual.
+- **Configuración:** `supabase/config.toml` habilita registro local y exige diez caracteres; la producción requiere habilitar registro y comprobar las Redirect URLs en el dashboard después de aplicar las migraciones. Procedimiento en `docs/lanzamiento-autoservicio-2026-10-15.md`.
+- **Pruebas:** se agregaron casos de primera recepción, reasignación, alta de cadena y controles de acceso a invitaciones. La ejecución de integración sigue pendiente de un proyecto Supabase de pruebas con `.env.test.local`.
+
+## Invitaciones masivas y enlaces de sucursal — 2026-10-15
+
+- **Alta por lote:** desde Usuarios, el administrador elige un local y pega hasta 20 nombres y correos. Se informa el resultado de cada envío. Repetir el lote reutiliza perfiles sin acceso y permite reintentar correos fallidos.
+- **Alta mediante enlace:** desde Sucursales, el administrador emite, copia, renueva o desactiva un enlace. El encargado crea su cuenta, confirma el correo y queda asignado únicamente al local del enlace. El token dura siete días, admite veinte altas y la base controla el cupo con bloqueo de fila.
+- **Seguridad:** `0017_branch_join_links.sql` no concede lectura directa de tokens. Las funciones comprueban administrador activo, correo confirmado, local activo, vencimiento, cupo y ausencia de un perfil previo. Las acciones relevantes quedan en auditoría.
+- **Validación:** 62 pruebas unitarias, TypeScript, ESLint, compilación y GitHub Actions aprobados. Las pruebas de integración nuevas siguen pendientes de un Supabase aislado; no se aplicaron las migraciones ni se publicó este PR en producción.
+- **Detalle y activación:** `docs/ultimos-cambios-2026-10-15.md` y `docs/lanzamiento-autoservicio-2026-10-15.md`.

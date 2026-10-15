@@ -67,6 +67,7 @@ export function LoginPage() {
         <Link to="/auth/recuperar" className="text-sm text-muted underline">
           Olvidé mi contraseña
         </Link>
+        <Link to="/registro" className="text-sm font-semibold underline">Crear una cadena nueva</Link>
       </form>
     </AuthLayout>
   )

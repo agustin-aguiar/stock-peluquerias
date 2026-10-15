@@ -1,17 +1,42 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { useCurrentProfile } from '@/app/guards'
 import type { Database } from '@/types/database'
 
 export type StockRequest = Database['public']['Tables']['stock_requests']['Row']
 
 export function useStockRequests() {
+  const profile = useCurrentProfile()
   return useQuery({
-    queryKey: ['stock-requests'],
+    queryKey: ['stock-requests', profile.id],
     queryFn: async (): Promise<StockRequest[]> => {
-      const { data, error } = await supabase.from('stock_requests').select('*')
-        .order('requested_at', { ascending: false }).limit(200)
+      const pending: StockRequest[] = []
+      const pageSize = 500
+      for (let from = 0; ; from += pageSize) {
+        let query = supabase.from('stock_requests').select('*')
+          .order('requested_at', { ascending: false }).range(from, from + pageSize - 1)
+        query = profile.role === 'admin'
+          ? query.in('status', ['pending_admin', 'declined'])
+          : query.eq('status', 'pending_source').eq('source_branch_id', profile.branch_id!)
+        const { data, error } = await query
+        if (error) throw error
+        pending.push(...data)
+        if (data.length < pageSize) break
+      }
+      if (profile.role === 'operator') {
+        for (let from = 0; ; from += pageSize) {
+          const { data, error } = await supabase.from('stock_requests').select('*')
+            .eq('branch_id', profile.branch_id!).eq('status', 'pending_admin')
+            .order('requested_at', { ascending: false }).range(from, from + pageSize - 1)
+          if (error) throw error
+          pending.push(...data)
+          if (data.length < pageSize) break
+        }
+      }
+      const { data: recent, error } = await supabase.from('stock_requests').select('*')
+        .order('requested_at', { ascending: false }).limit(100)
       if (error) throw error
-      return data
+      return [...new Map([...pending, ...recent].map((row) => [row.id, row])).values()]
     },
     retry: false,
     refetchInterval: (query) => query.state.status === 'error' ? false : 30_000,

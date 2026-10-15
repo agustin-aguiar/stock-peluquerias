@@ -3,9 +3,8 @@
 ## 1. Proyecto Supabase
 
 1. Crear proyecto en https://supabase.com/dashboard (región São Paulo, plan Free). Guardar la contraseña de la base.
-2. Authentication → Sign In / Providers → Email → apagar "Allow new users to sign up".
-   El archivo `supabase/config.toml` también fija `enable_signup = false`; después de cualquier `supabase config push` o recreación del proyecto, volver a verificar el interruptor en el dashboard: el trigger que vincula cuentas por email depende de que el registro público esté cerrado.
-3. Authentication → URL Configuration → agregar a "Redirect URLs" cada origen de la app seguido de `/auth/restablecer` (por ejemplo `http://localhost:5173/auth/restablecer` y la URL de Vercel). Sin esto, la recuperación de contraseña no vuelve a la app.
+2. Authentication → Sign In / Providers → Email → habilitar "Allow new users to sign up" **después de aplicar las migraciones 0015 y 0016**. Mantener la confirmación del correo activada. `supabase/config.toml` fija `enable_signup = true` y una contraseña mínima de 10 caracteres para entornos locales; comprobar los mismos ajustes en el proyecto alojado antes del lanzamiento.
+3. Authentication → URL Configuration → agregar a "Redirect URLs" cada origen de la app seguido de `/auth/restablecer` y `/sin-perfil` (por ejemplo `http://localhost:5173/auth/restablecer`, `http://localhost:5173/sin-perfil` y las dos rutas en la URL de Vercel).
 
 ## 2. Enlazar la CLI (una vez por máquina)
 
@@ -33,36 +32,26 @@ Alternativa sin CLI: pegar cada archivo de `supabase/migrations/` en orden en SQ
 
 Regla: una migración aplicada no se edita; los cambios van en una nueva.
 
-Regla: Toda migración que cree una tabla nueva debe repetir `revoke all on <tabla> from anon, authenticated; grant select on <tabla> to authenticated;` y sus políticas RLS: los permisos por defecto de Supabase exponen las tablas nuevas.
+Regla: Toda migración que cree una tabla nueva debe revocar primero los permisos por defecto y habilitar RLS. Conceder lectura y crear políticas solo cuando la pantalla necesite leer la tabla directamente. `branch_join_links` se consulta únicamente mediante funciones que comprueban el rol administrador.
 
 ## 5. Cuentas de acceso
 
-Las cuentas se crean desde el dashboard, nunca por registro público:
+1. El primer administrador entra en `/registro`, crea una cuenta y confirma su correo. Al volver a la app, `create_my_chain` crea su cadena y su perfil de administrador en una sola transacción. No puede elegir un rol o una cadena existente.
+2. Desde `/sucursales` crea los locales. Luego puede incorporar encargados de dos maneras: en `/usuarios` invita a una persona o pulsa «Invitar varios», elige el local y pega hasta 20 líneas `Nombre completo;correo`; la app crea perfiles y envía invitaciones individuales. También puede pulsar «Enlace de acceso» en una sucursal, compartirlo y dejar que cada encargado cree su cuenta. El enlace dura 7 días, admite 20 altas y puede regenerarse o desactivarse.
+3. Los invitados por correo abren el mensaje y eligen su contraseña en `/auth/restablecer`. Quienes reciben un enlace de local usan `/registro?invitacion=...`, confirman su correo y activan el acceso en `/sin-perfil`. La base asigna únicamente el rol de encargado y la sucursal del enlace.
+4. Si el correo falla, el perfil queda visible como «Sin acceso» y el administrador puede pulsar «Enviar invitación» nuevamente o repetir el lote: los perfiles existentes se reutilizan. La función privada `/api/invite-user` necesita `SUPABASE_URL` (o `VITE_SUPABASE_URL`) y `SUPABASE_SECRET_KEY` (o la clave heredada `SUPABASE_SERVICE_ROLE_KEY`) **solo en el servidor**. `PUBLIC_APP_URL` es opcional; por defecto usa la URL de producción.
 
-1. En la app, el administrador crea el perfil (`/usuarios`) con email, rol y sucursal. Para el primer administrador, el perfil ya viene en el seed (`admin@example.com`).
-2. Dashboard → Authentication → Users → Add user → Create new user: mismo email, contraseña, "Auto Confirm User" activado.
-3. El trigger `on_auth_user_created` vincula la cuenta con el perfil. En `/usuarios` desaparece el chip "Sin cuenta".
-
-Si el chip persiste: verificar que el email coincida (sin distinguir mayúsculas) y correr `npm run db:seed` solo si es la cadena demo (el seed re-vincula al final). Para otros perfiles, ejecutar en SQL Editor:
-
-```sql
-update public.profiles p set auth_user_id = u.id
-  from auth.users u
- where p.auth_user_id is null and lower(u.email) = lower(p.email)
-   and not exists (select 1 from public.profiles q where q.auth_user_id = u.id);
-```
-
-Desactivar un usuario (`/usuarios` → editar → "Usuario activo" apagado) bloquea todas sus lecturas y escrituras de inmediato, aunque tenga sesión abierta.
+Una dirección de correo solo puede pertenecer a una cadena en el modelo actual. Desactivar un usuario (`/usuarios` → editar → "Usuario activo" apagado) bloquea sus lecturas y escrituras aunque tenga sesión abierta.
 
 ## 6. Pruebas
 
 Para SP2, aplicar primero la migración `0006_rpc_movements.sql` al proyecto de prueba. La interfaz llama las RPC `register_movement` y `reverse_movement`; sin esa migración, los formularios mostrarán un error. Usar credenciales de prueba vigentes en `.env.test.local` y ejecutar la batería de integración antes de publicar.
 
-SP3 requiere `0007_rpc_transfers.sql`. El tablero y los conteos requieren `0008_dashboard_counts.sql`; la importación CSV requiere `0009_csv_batches.sql`. La carga directa de stock desde Inventario requiere `0010_rpc_assign_stock.sql` y `0011_fix_assign_stock_type.sql`. El correo diario requiere `0012_daily_low_stock_emails.sql` y `0013_daily_mail_invoker.sql`. Aplicar migraciones en orden antes de desplegar el frontend. No ejecutar `db:seed` sobre la cadena demo existente salvo que se quiera recrearla.
+SP3 requiere `0007_rpc_transfers.sql`. El tablero y los conteos requieren `0008_dashboard_counts.sql`; la importación CSV requiere `0009_csv_batches.sql`. La carga directa de stock desde Inventario requiere `0010_rpc_assign_stock.sql` y `0011_fix_assign_stock_type.sql`. El correo diario requiere `0012_daily_low_stock_emails.sql` y `0013_daily_mail_invoker.sql`. Los pedidos requieren `0014_stock_requests.sql`; las mejoras de pedidos y alertas requieren `0015_requests_alerts.sql`; el alta de cadenas e invitaciones requiere `0016_self_service_chains.sql` y los enlaces de local requieren `0017_branch_join_links.sql`. Aplicar migraciones en orden antes de desplegar el frontend. No ejecutar `db:seed` sobre la cadena demo existente salvo que se quiera recrearla.
 
 En Inventario, el administrador puede pulsar «Asignar stock», elegir sucursal y producto, y cargar cantidad o envases. Si el producto no estaba habilitado, la operación lo habilita y registra el saldo inicial; si ya tenía saldo, registra un ingreso. Cada envío usa una clave de reintento para evitar duplicados.
 
-El resumen diario por correo usa Brevo y está implementado en `/api/daily-low-stock`; no afirmar que entrega correos hasta configurar las variables privadas y comprobar recepción real. Las invitaciones desde `/usuarios` todavía no están implementadas; configurar SMTP en Supabase solo habilita los correos de Auth (recuperación e invitaciones emitidas desde Supabase).
+El resumen diario por correo usa Brevo y está implementado en `/api/daily-low-stock`. Las invitaciones desde `/usuarios` usan Supabase Auth y el SMTP configurado allí; son independientes del correo diario de stock bajo. La tabla `branch_join_links` no concede lectura directa: las funciones de la base verifican al administrador y el alta valida token, vencimiento y cupo.
 
 ```bash
 npm test          # unitarias

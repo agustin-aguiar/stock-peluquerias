@@ -11,6 +11,7 @@ import { fieldErrors, type FieldErrors } from '@/lib/validation'
 import type { Profile, UserRole } from '@/types/models'
 import { useCreateProfile, useUpdateProfile } from './api'
 import { profileSchema } from './schema'
+import { inviteProfile } from './invitations'
 
 type Props = { open: boolean; onClose: () => void; profile: Profile | null; isSelf: boolean }
 
@@ -56,8 +57,17 @@ export function ProfileDialog({ open, onClose, profile, isSelf }: Props) {
         await update.mutateAsync({ id: profile.id, full_name: parsed.data.full_name, role: parsed.data.role, branch_id: parsed.data.branch_id, is_active: isActive })
         toast.push({ kind: 'success', text: 'Usuario actualizado.' })
       } else {
-        await create.mutateAsync(parsed.data)
-        toast.push({ kind: 'success', text: 'Perfil creado. Falta crear la cuenta de acceso.' })
+        const created = await create.mutateAsync(parsed.data)
+        if (created.auth_user_id) {
+          toast.push({ kind: 'success', text: 'Usuario creado. Ya puede iniciar sesión.' })
+        } else {
+          try {
+            await inviteProfile(created.id)
+            toast.push({ kind: 'success', text: 'Usuario creado e invitación enviada por correo.' })
+          } catch (inviteError) {
+            toast.push({ kind: 'error', text: `Usuario creado, pero no se envió la invitación: ${inviteError instanceof Error ? inviteError.message : 'Reintentá desde Usuarios.'}` })
+          }
+        }
       }
       onClose()
     } catch (err) {
@@ -99,7 +109,7 @@ export function ProfileDialog({ open, onClose, profile, isSelf }: Props) {
         )}
         {!profile && (
           <p className="rounded-control bg-indigo-bg p-3 text-xs text-indigo-fg">
-            Después de guardar, el administrador debe crear el acceso con este mismo correo en Supabase. Encontrás los pasos en la guía de operación.
+            Al guardar, se enviará una invitación para que la persona elija su contraseña.
           </p>
         )}
         {serverError && (

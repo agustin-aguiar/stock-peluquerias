@@ -77,5 +77,50 @@ describe('pedidos de stock entre locales', () => {
     expect(declined.error).toBeNull()
     expect(declined.data.status).toBe('declined')
     expect(await balance(t.branchB)).toBe(6)
+    const reassigned = await t.adminUser.client.rpc('review_stock_request', {
+      p_request_id: id, p_source_branch_id: t.branchB,
+    })
+    expect(reassigned.error).toBeNull()
+    expect(reassigned.data.status).toBe('pending_source')
+    const accepted = await t.opB.client.rpc('decide_stock_request', { p_request_id: id, p_accept: true })
+    expect(accepted.error).toBeNull()
+    expect(await balance(t.branchB)).toBe(4)
+  })
+
+  it('permite pedir un producto nuevo y lo incorpora al destino al enviarlo', async () => {
+    const created = await t.adminUser.client.rpc('upsert_product', {
+      p_sku: `NEW-${randomUUID().slice(0, 8)}`, p_name: 'Producto nuevo para el local', p_unit: 'unit',
+    })
+    if (created.error) throw created.error
+    const newProductId = created.data.id
+    const loaded = await t.adminUser.client.rpc('assign_stock', {
+      p_key: randomUUID(), p_branch_id: t.branchB, p_product_id: newProductId, p_qty: 3,
+    })
+    expect(loaded.error).toBeNull()
+    const request = await t.opA.client.rpc('request_stock', {
+      p_id: randomUUID(), p_product_id: newProductId, p_qty: 2,
+    })
+    expect(request.error).toBeNull()
+    expect((await t.adminUser.client.rpc('review_stock_request', {
+      p_request_id: request.data.id, p_source_branch_id: t.branchB,
+    })).error).toBeNull()
+    const accepted = await t.opB.client.rpc('decide_stock_request', {
+      p_request_id: request.data.id, p_accept: true,
+    })
+    expect(accepted.error).toBeNull()
+    const before = await admin.from('inventory').select('balance,initialized_at')
+      .eq('branch_id', t.branchA).eq('product_id', newProductId).single()
+    expect(before.error).toBeNull()
+    if (!before.data) throw before.error ?? new Error('No se creó el inventario de destino')
+    expect(Number(before.data.balance)).toBe(0)
+    expect(before.data.initialized_at).not.toBeNull()
+    const received = await t.opA.client.rpc('receive_transfer', {
+      p_key: randomUUID(), p_transfer_id: accepted.data.transfer_id,
+    })
+    expect(received.error).toBeNull()
+    const after = await admin.from('inventory').select('balance')
+      .eq('branch_id', t.branchA).eq('product_id', newProductId).single()
+    if (!after.data) throw after.error ?? new Error('No se encontró el inventario de destino')
+    expect(Number(after.data.balance)).toBe(2)
   })
 })

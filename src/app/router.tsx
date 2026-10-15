@@ -5,6 +5,7 @@ import { AppShell } from './layout/AppShell'
 import { LoadingState } from '@/components/ui/States'
 
 const LoginPage = lazy(() => import('@/features/auth/LoginPage').then((m) => ({ default: m.LoginPage })))
+const RegistroPage = lazy(() => import('@/features/auth/RegistroPage').then((m) => ({ default: m.RegistroPage })))
 const RecuperarPage = lazy(() => import('@/features/auth/RecuperarPage').then((m) => ({ default: m.RecuperarPage })))
 const RestablecerPage = lazy(() => import('@/features/auth/RestablecerPage').then((m) => ({ default: m.RestablecerPage })))
 const SinPerfilPage = lazy(() => import('@/features/auth/SinPerfilPage').then((m) => ({ default: m.SinPerfilPage })))
@@ -32,6 +33,7 @@ function page(content: ReactNode) {
 
 export const router = createBrowserRouter([
   { path: '/login', element: page(<LoginPage />) },
+  { path: '/registro', element: page(<RegistroPage />) },
   { path: '/auth/recuperar', element: page(<RecuperarPage />) },
   { path: '/auth/restablecer', element: page(<RestablecerPage />) },
   {
