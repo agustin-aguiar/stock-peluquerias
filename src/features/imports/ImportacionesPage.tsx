@@ -82,7 +82,7 @@ export function ImportacionesPage() {
   }
 
   return <>
-    <PageHeader eyebrow="Datos" title="Importación y exportación" description="Revisá el archivo antes de confirmar: el lote entero se aplica o se rechaza." />
+    <PageHeader eyebrow="Datos" title="Cargar o descargar archivos" description="Podés cargar varios productos desde un archivo o descargar el inventario. Revisá los datos antes de confirmar." />
     <div className="mb-5 flex flex-wrap gap-2">
       <Button variant="secondary" onClick={() => download('plantilla-catalogo.csv', makeCsv(HEADERS.catalog, []))}>Plantilla de catálogo</Button>
       <Button variant="secondary" onClick={() => download('plantilla-saldos.csv', makeCsv(HEADERS.initial, []))}>Plantilla de saldos</Button>
@@ -93,14 +93,14 @@ export function ImportacionesPage() {
         options={[{ value: 'catalog', label: 'Catálogo: productos nuevos' }, { value: 'initial', label: 'Saldos iniciales' }]} />
         <div className="flex flex-col gap-1"><label htmlFor="csv-file" className="text-sm font-semibold">Archivo CSV UTF-8</label>
           <input id="csv-file" type="file" accept=".csv,text/csv" onChange={(e) => void readFile(e)} className="text-sm" /></div></div>
-      <p className="mt-3 text-sm text-muted">Separador: coma. Decimales: punto. Hasta 500 filas. Los saldos iniciales sólo se cargan una vez por producto y local; el mínimo existente debe coincidir con el archivo.</p>
+      <p className="mt-3 text-sm text-muted">Usá la plantilla como ejemplo. El archivo debe tener hasta 500 filas, columnas separadas por coma y decimales con punto. La primera carga de stock de cada producto y local se hace una sola vez.</p>
       {fileName && <p className="mt-3 text-sm">Archivo: <strong>{fileName}</strong> · {rows.length} filas leídas.</p>}
       {errors.length > 0 && <ul role="alert" className="mt-3 list-disc pl-5 text-sm text-carmine-fg">{errors.slice(0, 20).map((error, i) => <li key={i}>{error}</li>)}
         {errors.length > 20 && <li>Hay {errors.length - 20} errores más.</li>}</ul>}
       {rows.length > 0 && <div className="mt-4 overflow-x-auto"><table className="min-w-full border-collapse text-sm"><thead><tr className="text-left text-muted">{HEADERS[kind].map((h) => <th key={h} className="border-b border-hairline p-2">{h}</th>)}</tr></thead>
         <tbody>{rows.slice(0, 20).map((row, i) => <tr key={i} className="border-b border-hairline">{HEADERS[kind].map((h) => <td key={h} className="p-2">{String(row[h] ?? '')}</td>)}</tr>)}</tbody></table>
         {rows.length > 20 && <p className="mt-2 text-xs text-muted">Vista previa de las primeras 20 filas.</p>}</div>}
-      <div className="mt-4"><Button onClick={() => void confirm()} disabled={pending || !rows.length || errors.length > 0}>{pending ? 'Importando…' : 'Confirmar lote'}</Button></div>
+      <div className="mt-4"><Button onClick={() => void confirm()} disabled={pending || !rows.length || errors.length > 0}>{pending ? 'Cargando…' : 'Confirmar carga'}</Button></div>
     </section>
   </>
 }

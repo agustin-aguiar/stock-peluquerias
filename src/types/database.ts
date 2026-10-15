@@ -14,6 +14,29 @@ export type Database = {
   }
   public: {
     Tables: {
+      stock_requests: {
+        Row: {
+          id: string
+          chain_id: string
+          branch_id: string
+          product_id: string
+          qty: number
+          note: string | null
+          status: 'pending_admin' | 'pending_source' | 'rejected' | 'declined' | 'dispatched'
+          requested_by: string
+          requested_at: string
+          source_branch_id: string | null
+          reviewed_by: string | null
+          reviewed_at: string | null
+          decided_by: string | null
+          decided_at: string | null
+          decision_note: string | null
+          transfer_id: string | null
+        }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
       alerts: {
         Row: {
           branch_id: string
@@ -754,6 +777,9 @@ export type Database = {
       }
     }
     Functions: {
+      request_stock: { Args: { p_id: string; p_product_id: string; p_qty: number; p_note?: string | null }; Returns: Database['public']['Tables']['stock_requests']['Row'] }
+      review_stock_request: { Args: { p_request_id: string; p_source_branch_id?: string | null; p_reason?: string | null }; Returns: Database['public']['Tables']['stock_requests']['Row'] }
+      decide_stock_request: { Args: { p_request_id: string; p_accept: boolean; p_reason?: string | null }; Returns: Database['public']['Tables']['stock_requests']['Row'] }
       assign_stock: {
         Args: { p_key: string; p_branch_id: string; p_product_id: string; p_qty: number; p_reference?: string | null }
         Returns: Json

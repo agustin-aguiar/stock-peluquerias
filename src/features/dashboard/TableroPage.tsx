@@ -22,7 +22,7 @@ export function TableroPage() {
   const usage = (snapshot.data?.usage ?? []).filter((row) => branchId === 'all' || row.branch_id === branchId)
 
   return <>
-    <PageHeader eyebrow="Seguimiento" title="Tablero" description="Faltantes actuales y movimientos de consumo y merma del período elegido." />
+    <PageHeader eyebrow="Seguimiento" title="Resumen de stock" description="Compará los locales y mirá qué productos se usaron o se perdieron en el período elegido." />
     <div className="mb-5 grid gap-3 md:grid-cols-3">
       <Input label="Desde" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
       <Input label="Hasta" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
@@ -33,15 +33,15 @@ export function TableroPage() {
     {snapshot.isPending && from <= to && <LoadingState />}
     {snapshot.isError && <ErrorState message={messageFor(snapshot.error)} onRetry={() => void snapshot.refetch()} />}
     {snapshot.data && <>
-      <p className="mb-3 text-sm text-muted">Los faltantes, saldos cero y transferencias abiertas muestran el estado actual. Consumo y merma usan las fechas seleccionadas; no incluyen traslados ni movimientos revertidos.</p>
+      <p className="mb-3 text-sm text-muted">Los productos con poco stock, agotados y los envíos pendientes muestran la situación de hoy. Los productos usados y perdidos corresponden a las fechas elegidas.</p>
       <ul className="mb-8 grid gap-3 md:grid-cols-3">{branches.filter((b) => branchId === 'all' || b.branch_id === branchId).map((b) =>
         <li key={b.branch_id} className="rounded-lg border border-hairline bg-surface p-4">
           <h2 className="font-semibold">{b.branch_name}</h2>
-          <dl className="mt-2 grid grid-cols-3 gap-2 text-center text-sm"><div><dt>Bajo mínimo</dt><dd className="text-xl font-bold">{b.below_min}</dd></div>
-            <div><dt>Saldo cero</dt><dd className="text-xl font-bold">{b.zero_balance}</dd></div>
-            <div><dt>Transferencias abiertas</dt><dd className="text-xl font-bold">{b.open_transfers}</dd></div></dl>
+          <dl className="mt-2 grid grid-cols-3 gap-2 text-center text-sm"><div><dt>Queda poco</dt><dd className="text-xl font-bold">{b.below_min}</dd></div>
+            <div><dt>Agotados</dt><dd className="text-xl font-bold">{b.zero_balance}</dd></div>
+            <div><dt>Envíos pendientes</dt><dd className="text-xl font-bold">{b.open_transfers}</dd></div></dl>
         </li>)}</ul>
-      <h2 className="mb-3 text-lg font-semibold">Consumo y merma por producto</h2>
+      <h2 className="mb-3 text-lg font-semibold">Productos usados o perdidos</h2>
       {usage.length === 0 && <EmptyState title="Sin salidas en este período" />}
       {usage.length > 0 && <div className="overflow-x-auto"><table className="w-full min-w-[36rem] border-collapse text-sm">
         <thead><tr className="label-caps text-left text-muted"><th className="py-2">Producto</th><th>Sucursal</th><th className="text-right">Consumo</th><th className="text-right">Merma</th></tr></thead>

@@ -17,6 +17,8 @@ const CatalogoPage = lazy(() => import('@/features/products/CatalogoPage').then(
 const ProductoFormPage = lazy(() => import('@/features/products/ProductoFormPage').then((m) => ({ default: m.ProductoFormPage })))
 const UsuariosPage = lazy(() => import('@/features/users/UsuariosPage').then((m) => ({ default: m.UsuariosPage })))
 const TransferenciasPage = lazy(() => import('@/features/transfers/TransferenciasPage').then((m) => ({ default: m.TransferenciasPage })))
+const SolicitudesPage = lazy(() => import('@/features/requests/SolicitudesPage').then((m) => ({ default: m.SolicitudesPage })))
+const AyudaPage = lazy(() => import('@/features/help/AyudaPage').then((m) => ({ default: m.AyudaPage })))
 const TableroPage = lazy(() => import('@/features/dashboard/TableroPage').then((m) => ({ default: m.TableroPage })))
 const ConteosPage = lazy(() => import('@/features/counts/ConteosPage').then((m) => ({ default: m.ConteosPage })))
 const ImportacionesPage = lazy(() => import('@/features/imports/ImportacionesPage').then((m) => ({ default: m.ImportacionesPage })))
@@ -46,6 +48,8 @@ export const router = createBrowserRouter([
               { path: 'inventario', element: page(<InventarioPage />) },
               { path: 'inventario/:productId', element: page(<ProductoDetallePage />) },
               { path: 'transferencias', element: page(<TransferenciasPage />) },
+              { path: 'solicitudes', element: page(<SolicitudesPage />) },
+              { path: 'ayuda', element: page(<AyudaPage />) },
               { path: 'conteos', element: page(<ConteosPage />) },
               {
                 element: <RequireRole role="admin" />,

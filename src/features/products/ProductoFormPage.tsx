@@ -108,10 +108,10 @@ export function ProductoFormPage() {
         }
       />
       <form onSubmit={onSubmit} className="grid max-w-3xl gap-4 md:grid-cols-2" noValidate>
-        <Input label="SKU" value={sku} onChange={(e) => setSku(e.target.value)} error={errors.sku} hint="Único por cadena." maxLength={40} />
+        <Input label="Código del producto" value={sku} onChange={(e) => setSku(e.target.value)} error={errors.sku} hint="Código interno único para identificar este producto." maxLength={40} />
         <Input label="Nombre" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} maxLength={160} />
         <Select
-          label="Unidad base"
+          label="Cómo se mide"
           value={unit}
           onChange={(e) => setUnit(e.target.value as UnitKind)}
           options={UNIT_OPTIONS}
@@ -119,7 +119,7 @@ export function ProductoFormPage() {
           error={errors.unit}
         />
         {unitLocked && (
-          <p className="text-xs text-muted md:col-start-2">La unidad no se puede cambiar: el producto ya tiene saldo registrado.</p>
+          <p className="text-xs text-muted md:col-start-2">No se puede cambiar cómo se mide un producto que ya tiene stock registrado.</p>
         )}
         <Input label="Marca" value={brand} onChange={(e) => setBrand(e.target.value)} error={errors.brand} maxLength={80} />
         <Input label="Categoría" value={category} onChange={(e) => setCategory(e.target.value)} error={errors.category} maxLength={80} />
@@ -131,11 +131,11 @@ export function ProductoFormPage() {
           onChange={(e) => setPresentationQty(e.target.value)}
           inputMode="decimal"
           className="tnum"
-          hint="Opcional. Permite cargar por envases con conversión visible."
+          hint="Opcional. Por ejemplo, 1.000 ml por botella. Así podrás cargar botellas y ver la cantidad total."
           error={errors.presentation_qty}
         />
         <Input
-          label={`Máximo por movimiento (${UNIT_LABEL[unit]})`}
+          label={`Cantidad máxima por operación (${UNIT_LABEL[unit]})`}
           value={maxQty}
           onChange={(e) => setMaxQty(e.target.value)}
           inputMode="decimal"

@@ -44,10 +44,10 @@ function AvailabilityRow({ productId, unit, branch, row }: RowProps) {
   const status = !row
     ? null
     : !row.initialized_at
-      ? <Chip tone="amber">Sin saldo inicial</Chip>
+      ? <Chip tone="amber">Falta primera carga</Chip>
       : row.below_min
-        ? <Chip tone="amber">Bajo mínimo</Chip>
-        : <Chip tone="sage">OK</Chip>
+        ? <Chip tone="amber">Queda poco</Chip>
+        : <Chip tone="sage">Disponible</Chip>
 
   return (
     <li className="flex flex-col gap-3 rounded-lg border border-hairline bg-surface p-4 md:flex-row md:items-end md:justify-between">
@@ -55,7 +55,7 @@ function AvailabilityRow({ productId, unit, branch, row }: RowProps) {
         <p className="label-caps text-muted">{branch.code}</p>
         <p className="font-semibold">{branch.name}</p>
         <p className="mt-1 text-sm tnum">
-          Saldo: {row ? formatQuantity(Number(row.balance ?? 0), unit) : '—'}
+          Disponible: {row ? formatQuantity(Number(row.balance ?? 0), unit) : '—'}
         </p>
         <div className="mt-1 flex items-center gap-2">
           {status}
@@ -68,7 +68,7 @@ function AvailabilityRow({ productId, unit, branch, row }: RowProps) {
       </div>
       <form onSubmit={onSubmit} className="flex items-end gap-2" noValidate>
         <Input
-          label={`Mínimo (${UNIT_LABEL[unit]})`}
+          label={`Avisar si queda menos de (${UNIT_LABEL[unit]})`}
           value={minStr}
           onChange={(e) => setMinStr(e.target.value)}
           inputMode="decimal"
@@ -76,7 +76,7 @@ function AvailabilityRow({ productId, unit, branch, row }: RowProps) {
           error={error ?? undefined}
         />
         <Button type="submit" variant={row ? 'secondary' : 'primary'} disabled={pending || !online}>
-          {pending ? 'Guardando…' : row ? 'Guardar mínimo' : 'Habilitar'}
+          {pending ? 'Guardando…' : row ? 'Guardar aviso' : 'Agregar al local'}
         </Button>
       </form>
     </li>

@@ -17,8 +17,8 @@ const TYPE_OPTIONS = [
   { value: 'purchase', label: 'Ingreso de proveedor' },
   { value: 'consumption', label: 'Consumo interno' },
   { value: 'sale', label: 'Salida por venta' },
-  { value: 'shrinkage', label: 'Merma' },
-  { value: 'adjustment', label: 'Ajuste de inventario' },
+  { value: 'shrinkage', label: 'Pérdida o producto dañado' },
+  { value: 'adjustment', label: 'Corregir cantidad' },
 ]
 
 export function MovementDialog({ open, onClose, product, row, isAdmin }: Props) {
@@ -86,8 +86,8 @@ export function MovementDialog({ open, onClose, product, row, isAdmin }: Props) 
   }
 
   return (
-    <Dialog open={open} onClose={onClose} title={`Movimiento · ${row.branch_name}`}>
-      <p className="mb-4 text-sm text-muted">{product.name} · {product.sku} · saldo actual {formatQuantity(Number(row.balance), unit)}</p>
+    <Dialog open={open} onClose={onClose} title={`Registrar entrada o salida · ${row.branch_name}`}>
+      <p className="mb-4 text-sm text-muted">{product.name} · disponible ahora: {formatQuantity(Number(row.balance), unit)}</p>
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
         <Select label="Tipo" value={type} onChange={(e) => setType(e.target.value as MovementType)}
           options={TYPE_OPTIONS.filter((option) => isAdmin || !['purchase', 'adjustment'].includes(option.value))} />
@@ -99,7 +99,7 @@ export function MovementDialog({ open, onClose, product, row, isAdmin }: Props) 
           </fieldset>
         )}
         {type === 'adjustment' && (
-          <Select label="Ajuste" value={direction} onChange={(e) => setDirection(e.target.value as 'add' | 'subtract')}
+          <Select label="Cómo corregir" value={direction} onChange={(e) => setDirection(e.target.value as 'add' | 'subtract')}
             options={[{ value: 'add', label: 'Sumar al saldo' }, { value: 'subtract', label: 'Restar del saldo' }]} />
         )}
         <Input label={mode === 'packages' && canUsePackages ? `Envases (${formatQuantity(Number(product.presentation_qty), unit)} cada uno)` : `Cantidad (${UNIT_LABEL[unit]})`}
@@ -110,14 +110,14 @@ export function MovementDialog({ open, onClose, product, row, isAdmin }: Props) 
         <Input label="Proveedor o referencia (opcional)" value={reference} onChange={(e) => setReference(e.target.value)} maxLength={120} />
         <div className="rounded-control border border-hairline bg-canvas p-3 text-sm" aria-live="polite">
           {mode === 'packages' && canUsePackages && parsed.ok && <p>{qtyText} envases = {formatQuantity(qty, unit)}</p>}
-          <p>Saldo propuesto: <strong>{parsed.ok ? formatQuantity(nextBalance, unit) : '—'}</strong></p>
+          <p>Quedarán disponibles: <strong>{parsed.ok ? formatQuantity(nextBalance, unit) : '—'}</strong></p>
           {parsed.ok && nextBalance < 0 && <p className="text-carmine-fg">La salida supera el saldo disponible.</p>}
-          {parsed.ok && nextBalance >= 0 && nextBalance <= Number(row.min_qty) && <p className="text-amber-fg">Quedará bajo mínimo.</p>}
+          {parsed.ok && nextBalance >= 0 && nextBalance <= Number(row.min_qty) && <p className="text-amber-fg">Quedará poco stock y aparecerá un aviso.</p>}
         </div>
         {error && <p role="alert" className="text-sm text-carmine-fg">{error}</p>}
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose} disabled={mutation.isPending}>Cancelar</Button>
-          <Button type="submit" disabled={mutation.isPending || !online || !valid}>{mutation.isPending ? 'Registrando…' : 'Confirmar movimiento'}</Button>
+          <Button type="submit" disabled={mutation.isPending || !online || !valid}>{mutation.isPending ? 'Registrando…' : 'Guardar cambio de stock'}</Button>
         </div>
       </form>
     </Dialog>

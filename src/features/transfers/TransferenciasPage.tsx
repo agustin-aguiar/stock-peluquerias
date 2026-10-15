@@ -14,7 +14,7 @@ import { formatQuantity, parseQuantity } from '@/lib/quantity'
 import { useTransferAction, useTransfers, type TransferView } from './api'
 
 const STATUS: Record<string, string> = {
-  draft: 'Borrador', dispatched: 'En tránsito', disputed: 'Con diferencia',
+  draft: 'Preparando envío', dispatched: 'En camino', disputed: 'Llegó una cantidad diferente',
   received: 'Recibida', resolved: 'Resuelta', cancelled: 'Cancelada',
 }
 type ActionKind = 'cancel' | 'dispatch' | 'receive' | 'dispute' | 'resolve'
@@ -67,7 +67,7 @@ export function TransferenciasPage() {
     try {
       await mutation.mutateAsync({ kind: 'create', id: transferId, productId, fromBranchId: fromId,
         toBranchId: toId, qty: parsedQty.value, shippingRef: shippingRef.trim() || null })
-      toast.push({ kind: 'success', text: 'Borrador de transferencia creado.' })
+      toast.push({ kind: 'success', text: 'Envío preparado. Falta confirmar la salida.' })
       setCreating(false)
     } catch (err) { setError(messageFor(err)) }
   }
@@ -107,13 +107,13 @@ export function TransferenciasPage() {
   }
 
   return <>
-    <PageHeader eyebrow="Entre locales" title="Transferencias" description="El despacho descuenta el origen; la recepción acredita el destino. Lo pendiente permanece en tránsito."
-      actions={isAdmin && <Button onClick={openCreate}>Nueva transferencia</Button>} />
+    <PageHeader eyebrow="Entre locales" title="Envíos entre locales" description="Al confirmar la salida, se descuenta del local que envía. El destino suma el producto cuando confirma que llegó."
+      actions={isAdmin && <Button onClick={openCreate}>Preparar envío</Button>} />
     <div className="mb-4 max-w-xs"><Select label="Estado" value={status} onChange={(e) => setStatus(e.target.value)}
       options={[{ value: 'all', label: 'Todas' }, ...Object.entries(STATUS).map(([value, label]) => ({ value, label }))]} /></div>
     {transfers.isPending && <LoadingState />}
     {transfers.isError && <ErrorState message={messageFor(transfers.error)} onRetry={() => void transfers.refetch()} />}
-    {transfers.data?.length === 0 && <EmptyState title="No hay transferencias" description="Probá otro estado o creá un borrador." />}
+    {transfers.data?.length === 0 && <EmptyState title="No hay envíos" description="Probá otro estado o prepará un envío." />}
     <ul className="grid gap-3">{transfers.data?.map((row) => {
       const canReceive = isAdmin || me.branch_id === row.to_branch_id
       const unit = row.product?.unit ?? 'unit'
@@ -122,41 +122,40 @@ export function TransferenciasPage() {
           <div><p className="label-caps text-muted">{STATUS[row.status]} · {new Date(row.created_at).toLocaleString('es-UY')}</p>
             <h2 className="font-semibold">{row.product?.name ?? 'Producto'} <span className="text-muted">{row.product?.sku}</span></h2>
             <p className="text-sm">{row.origin?.name} → {row.destination?.name} · <strong>{formatQuantity(Number(row.qty), unit)}</strong></p>
-            {row.shipping_ref && <p className="text-sm text-muted">Referencia: {row.shipping_ref}</p>}
+            {row.shipping_ref && <p className="text-sm text-muted">Nota del envío: {row.shipping_ref}</p>}
             {row.dispute_note && <p className="text-sm text-amber-fg">Diferencia: {row.dispute_note}</p>}
             {row.status === 'resolved' && <p className="text-sm">Recibido {formatQuantity(Number(row.resolved_qty_received), unit)} · devuelto {formatQuantity(Number(row.resolved_qty_returned), unit)} · merma {formatQuantity(Number(row.resolved_qty_lost), unit)}</p>}
-            <p className="font-mono text-xs text-muted" title={row.id}>N.º {row.id}</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {row.status === 'draft' && isAdmin && <><Button variant="secondary" onClick={() => openAction(row, 'cancel')}>Cancelar</Button><Button onClick={() => openAction(row, 'dispatch')}>Despachar</Button></>}
-            {row.status === 'dispatched' && canReceive && <><Button variant="secondary" onClick={() => openAction(row, 'dispute')}>Reportar diferencia</Button><Button onClick={() => openAction(row, 'receive')}>Recibir completo</Button></>}
+            {row.status === 'draft' && isAdmin && <><Button variant="secondary" onClick={() => openAction(row, 'cancel')}>Cancelar</Button><Button onClick={() => openAction(row, 'dispatch')}>Confirmar salida</Button></>}
+            {row.status === 'dispatched' && canReceive && <><Button variant="secondary" onClick={() => openAction(row, 'dispute')}>Llegó menos o más</Button><Button onClick={() => openAction(row, 'receive')}>Confirmar recepción completa</Button></>}
             {row.status === 'disputed' && isAdmin && <Button onClick={() => openAction(row, 'resolve')}>Resolver diferencia</Button>}
           </div>
         </div>
       </li>
     })}</ul>
-    {creating && <Dialog open onClose={() => setCreating(false)} title="Nueva transferencia">
+    {creating && <Dialog open onClose={() => setCreating(false)} title="Preparar envío entre locales">
       <form onSubmit={create} className="flex flex-col gap-4" noValidate>
         <Select label="Producto" placeholder="Elegí un producto" value={productId} onChange={(e) => setProductId(e.target.value)}
           options={(products.data ?? []).map((p) => ({ value: p.id, label: `${p.sku} · ${p.name}` }))} />
-        <Select label="Origen" placeholder="Elegí una sucursal" value={fromId} onChange={(e) => setFromId(e.target.value)}
+        <Select label="Local que envía" placeholder="Elegí una sucursal" value={fromId} onChange={(e) => setFromId(e.target.value)}
           options={activeBranches.map((b) => ({ value: b.id, label: b.name }))} />
-        <Select label="Destino" placeholder="Elegí una sucursal" value={toId} onChange={(e) => setToId(e.target.value)}
+        <Select label="Local que recibe" placeholder="Elegí una sucursal" value={toId} onChange={(e) => setToId(e.target.value)}
           options={activeBranches.map((b) => ({ value: b.id, label: b.name }))} />
         <Input label={`Cantidad (${product?.unit ?? 'unidad'})`} value={qtyText} onChange={(e) => setQtyText(e.target.value)} inputMode="decimal" />
-        <Input label="Referencia de envío (opcional)" value={shippingRef} onChange={(e) => setShippingRef(e.target.value)} maxLength={120} />
-        <p className="text-sm text-muted">El borrador no reserva stock. El saldo se comprueba al despachar.</p>
+        <Input label="Nota del envío (opcional)" value={shippingRef} onChange={(e) => setShippingRef(e.target.value)} maxLength={120} />
+        <p className="text-sm text-muted">Preparar el envío no cambia el stock. La cantidad disponible se comprueba al confirmar la salida.</p>
         {error && <p role="alert" className="text-sm text-carmine-fg">{error}</p>}
         <div className="flex justify-end gap-2"><Button variant="secondary" onClick={() => setCreating(false)}>Cancelar</Button>
-          <Button type="submit" disabled={mutation.isPending}>Crear borrador</Button></div>
+          <Button type="submit" disabled={mutation.isPending}>Preparar envío</Button></div>
       </form>
     </Dialog>}
     {selected && <Dialog open onClose={() => setSelected(null)} title={`${STATUS[selected.status]} · ${selected.product?.name ?? 'Transferencia'}`}>
       <form onSubmit={submitAction} className="flex flex-col gap-4" noValidate>
         <p className="text-sm">{selected.origin?.name} → {selected.destination?.name} · {formatQuantity(Number(selected.qty), selected.product?.unit ?? 'unit')}</p>
-        {action === 'dispatch' && <p className="text-sm">Se descontará del origen y quedará en tránsito hasta la recepción.</p>}
+        {action === 'dispatch' && <p className="text-sm">Se descontará del local que envía. El destino deberá confirmar cuando reciba el producto.</p>}
         {action === 'receive' && <p className="text-sm">Confirmás que llegó la cantidad completa. Si hay diferencia, reportala antes.</p>}
-        {action === 'cancel' && <p className="text-sm">Se cancelará el borrador sin cambiar ningún saldo.</p>}
+        {action === 'cancel' && <p className="text-sm">Se cancelará el envío preparado sin cambiar el stock.</p>}
         {action === 'resolve' && <><p className="text-sm">La devolución al origen debe haberse confirmado físicamente antes de acreditarla.</p>
           <Input label="Cantidad recibida" value={received} onChange={(e) => setReceived(e.target.value)} inputMode="decimal" />
           <Input label="Cantidad devuelta" value={returned} onChange={(e) => setReturned(e.target.value)} inputMode="decimal" />

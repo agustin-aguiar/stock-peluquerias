@@ -20,7 +20,7 @@ export function CatalogoPage() {
       <PageHeader
         eyebrow="Catálogo"
         title="Productos"
-        description="Catálogo compartido por toda la cadena."
+        description="Agregá aquí los productos que usan todos los locales. Después podés cargarles stock desde Inventario."
         actions={
           <Link to="/catalogo/nuevo">
             <Button>
@@ -31,7 +31,7 @@ export function CatalogoPage() {
       />
       <div className="mb-4 flex flex-wrap items-end gap-4">
         <div className="relative w-full max-w-sm">
-          <Input label="Buscar" placeholder="Nombre o SKU" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          <Input label="Buscar" placeholder="Nombre o código del producto" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
           <Search size={16} className="pointer-events-none absolute bottom-3 left-3 text-muted" aria-hidden />
         </div>
         <label className="flex h-10 items-center gap-2 text-sm">
@@ -42,14 +42,14 @@ export function CatalogoPage() {
       {products.isPending && <LoadingState />}
       {products.isError && <ErrorState message={messageFor(products.error)} onRetry={() => void products.refetch()} />}
       {products.data && products.data.length === 0 && (
-        <EmptyState title={search ? 'Sin resultados' : 'Todavía no hay productos'} description={search ? 'Probá con otro nombre o SKU.' : undefined} />
+        <EmptyState title={search ? 'Sin resultados' : 'Todavía no hay productos'} description={search ? 'Probá con otro nombre o código.' : undefined} />
       )}
       {products.data && products.data.length > 0 && (
         <>
           <table className="hidden w-full border-collapse text-sm md:table">
             <thead>
               <tr className="label-caps text-left text-muted">
-                <th className="py-2 pr-4">SKU</th>
+                <th className="py-2 pr-4">Código</th>
                 <th className="py-2 pr-4">Producto</th>
                 <th className="py-2 pr-4">Marca / categoría</th>
                 <th className="py-2 pr-4">Unidad</th>

@@ -8,9 +8,10 @@ import { signOut } from '@/features/auth/session'
 import { ActiveBranchProvider } from '@/features/branches/activeBranch'
 import { ROLE_LABEL } from '@/types/models'
 import { BranchPill } from './BranchPill'
+import { useStockRequests } from '@/features/requests/api'
 import { NAV, type NavItem } from './nav'
 
-function SideLink({ item }: { item: NavItem }) {
+function SideLink({ item, count }: { item: NavItem; count?: number }) {
   const Icon = item.icon
   return (
     <NavLink
@@ -19,12 +20,12 @@ function SideLink({ item }: { item: NavItem }) {
         `flex items-center gap-3 rounded-control px-3 py-2 text-sm font-semibold ${isActive ? 'bg-ink text-white' : 'text-ink hover:bg-canvas'}`
       }
     >
-      <Icon size={18} aria-hidden /> {item.label}
+      <Icon size={18} aria-hidden /> {item.label}{count ? <span className="ml-auto rounded-full bg-amber-100 px-2 text-xs text-amber-900">{count}</span> : null}
     </NavLink>
   )
 }
 
-function BottomLink({ item }: { item: NavItem }) {
+function BottomLink({ item, count }: { item: NavItem; count?: number }) {
   const Icon = item.icon
   return (
     <NavLink
@@ -34,18 +35,22 @@ function BottomLink({ item }: { item: NavItem }) {
       }
     >
       <Icon size={20} aria-hidden />
-      {item.label}
+      {item.label}{count ? <span className="rounded-full bg-amber-100 px-1.5 text-[10px] text-amber-900" aria-label={`${count} pedidos pendientes`}>{count}</span> : null}
     </NavLink>
   )
 }
 
 export function AppShell() {
   const profile = useCurrentProfile()
+  const requests = useStockRequests()
+  const pendingRequests = (requests.data ?? []).filter((r) => profile.role === 'admin'
+    ? r.status === 'pending_admin' : r.status === 'pending_source' && r.source_branch_id === profile.branch_id).length
   const [moreOpen, setMoreOpen] = useState(false)
-  const items = NAV.filter((i) => !i.adminOnly || profile.role === 'admin')
+  const items = NAV.filter((i) => (!i.adminOnly || profile.role === 'admin') &&
+    (i.to !== '/solicitudes' || requests.isSuccess))
   const primaryPaths = profile.role === 'admin'
-    ? ['/inicio', '/inventario', '/transferencias']
-    : ['/inventario', '/transferencias', '/conteos']
+    ? ['/inicio', '/inventario', '/solicitudes']
+    : ['/inventario', '/solicitudes', '/transferencias']
   const primaryItems = items.filter((i) => primaryPaths.includes(i.to))
   const moreItems = items.filter((i) => !primaryPaths.includes(i.to))
   return (
@@ -54,7 +59,7 @@ export function AppShell() {
         <aside className="hidden border-r border-hairline bg-surface p-4 md:flex md:flex-col md:gap-1">
           <p className="label-caps mb-3 px-3 text-muted">Stock Peluquerías</p>
           {items.map((i) => (
-            <SideLink key={i.to} item={i} />
+            <SideLink key={i.to} item={i} count={i.to === '/solicitudes' ? pendingRequests : undefined} />
           ))}
         </aside>
         <div className="flex min-h-dvh flex-col">
@@ -84,7 +89,7 @@ export function AppShell() {
             className="fixed inset-x-0 bottom-0 z-10 flex border-t border-hairline bg-surface md:hidden"
           >
             {primaryItems.map((i) => (
-              <BottomLink key={i.to} item={i} />
+              <BottomLink key={i.to} item={i} count={i.to === '/solicitudes' ? pendingRequests : undefined} />
             ))}
             {moreItems.length > 0 && <button type="button" onClick={() => setMoreOpen(true)}
               aria-label="Más secciones" className="flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-semibold text-muted">

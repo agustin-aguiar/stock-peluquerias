@@ -15,6 +15,7 @@ const entities = [
   { value: 'branch', label: 'Sucursales' },
   { value: 'profile', label: 'Usuarios' },
   { value: 'transfer', label: 'Transferencias' },
+  { value: 'stock_request', label: 'Pedidos de stock' },
   { value: 'physical_count', label: 'Conteos' },
   { value: 'import_batch', label: 'Importaciones' },
 ]
@@ -48,7 +49,7 @@ export function AuditoriaPage() {
   const events = useAuditEvents(type, from, to, page)
 
   return <>
-    <PageHeader eyebrow="Control" title="Auditoría" description="Consultá quién hizo cada cambio y qué ocurrió con el stock, los usuarios y las sucursales." />
+    <PageHeader eyebrow="Control" title="Historial de cambios" description="Consultá quién hizo cada cambio y qué ocurrió con el stock, los pedidos, los usuarios y los locales." />
     <div className="mb-5 grid gap-3 md:grid-cols-3">
       <Select label="Área" value={type} onChange={(e) => { setType(e.target.value); setPage(0) }} options={entities} />
       <Input label="Desde" type="date" value={from} onChange={(e) => { setFrom(e.target.value); setPage(0) }} />

@@ -16,6 +16,7 @@ import { COMPARE_LIMIT, PAGE_SIZE, useInventory } from './api'
 import { groupByProduct } from './group'
 import { StatusChip } from './StatusChip'
 import { QuickStockDialog } from './QuickStockDialog'
+import { useStockRequests } from '@/features/requests/api'
 
 function Cell({ row, unit, onAssign }: { row: InventoryStatus | undefined; unit: UnitKind; onAssign?: () => void }) {
   return (
@@ -30,6 +31,7 @@ function Cell({ row, unit, onAssign }: { row: InventoryStatus | undefined; unit:
 export function InventarioPage() {
   const profile = useCurrentProfile()
   const isAdmin = profile.role === 'admin'
+  const stockRequests = useStockRequests()
   const { branchId } = useActiveBranch()
   const branches = useBranches()
   const [search, setSearch] = useState('')
@@ -53,8 +55,9 @@ export function InventarioPage() {
       <PageHeader
         eyebrow={compare ? 'Comparación entre locales' : (branchName ?? 'Sucursal')}
         title="Inventario"
-        description={compare ? 'Un mismo SKU en cada sucursal. No se suman unidades distintas.' : 'Saldo utilizable por producto.'}
-        actions={isAdmin && <Button onClick={() => setAssignment({ branchId: branchId === 'all' ? undefined : branchId })}>Asignar stock</Button>}
+        description={compare ? 'Compará cuánto hay de cada producto en los locales.' : 'Cantidad disponible de cada producto en este local.'}
+        actions={isAdmin ? <Button onClick={() => setAssignment({ branchId: branchId === 'all' ? undefined : branchId })}>Cargar stock</Button>
+          : stockRequests.isSuccess && <Link to="/solicitudes"><Button>Pedir stock</Button></Link>}
       />
       <div className="mb-4 flex flex-wrap items-end gap-4">
         <div className="relative w-full max-w-sm">
@@ -63,7 +66,7 @@ export function InventarioPage() {
         </div>
         <label className="flex h-10 items-center gap-2 text-sm">
           <input type="checkbox" checked={onlyBelowMin} onChange={(e) => setOnlyBelowMin(e.target.checked)} />
-          Solo bajo mínimo
+          Solo productos con poco stock
         </label>
       </div>
 
@@ -82,10 +85,10 @@ export function InventarioPage() {
             <thead>
               <tr className="label-caps text-left text-muted">
                 <th className="py-2 pr-4">Producto</th>
-                <th className="py-2 pr-4">SKU</th>
+                <th className="py-2 pr-4" title="Código interno del producto">Código</th>
                 <th className="py-2 pr-4">Unidad</th>
-                <th className="py-2 pr-4 text-right">Saldo</th>
-                <th className="py-2 pr-4 text-right">Mínimo</th>
+                <th className="py-2 pr-4 text-right">Disponible</th>
+                <th className="py-2 pr-4 text-right">Stock mínimo</th>
                 <th className="py-2">Estado</th>
                 {isAdmin && <th className="py-2 text-right">Acción</th>}
               </tr>

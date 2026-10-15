@@ -44,15 +44,15 @@ export function InicioAdminPage() {
               </div>
               <dl className="grid grid-cols-3 gap-2 text-center tnum">
                 <div>
-                  <dt className="label-caps text-muted">Habilitados</dt>
+                  <dt className="label-caps text-muted">Productos en el local</dt>
                   <dd className="text-2xl font-bold">{s.enabled}</dd>
                 </div>
                 <div>
-                  <dt className="label-caps text-muted">Bajo mínimo</dt>
+                  <dt className="label-caps text-muted">Con poco stock</dt>
                   <dd className={`text-2xl font-bold ${s.belowMin > 0 ? 'text-amber-fg' : ''}`}>{s.belowMin}</dd>
                 </div>
                 <div>
-                  <dt className="label-caps text-muted">Sin saldo inicial</dt>
+                  <dt className="label-caps text-muted">Sin primera carga</dt>
                   <dd className="text-2xl font-bold">{s.uninitialized}</dd>
                 </div>
               </dl>

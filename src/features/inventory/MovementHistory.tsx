@@ -12,7 +12,7 @@ import { HISTORY_PAGE_SIZE, useMovementHistory, useReverseMovement, type Movemen
 
 const LABELS: Record<string, string> = {
   initial: 'Saldo inicial', purchase: 'Ingreso', consumption: 'Consumo', sale: 'Venta',
-  shrinkage: 'Merma', adjustment: 'Ajuste', reversal: 'Reversión',
+  shrinkage: 'Pérdida', adjustment: 'Corrección', reversal: 'Cambio deshecho',
 }
 
 type Props = { product: Product; rows: InventoryStatus[]; isAdmin: boolean }
@@ -72,7 +72,7 @@ export function MovementHistory({ product, rows, isAdmin }: Props) {
               <thead><tr className="label-caps text-left text-muted">
                 <th className="py-2 pr-4">Fecha</th><th className="py-2 pr-4">Sucursal</th>
                 <th className="py-2 pr-4">Tipo</th><th className="py-2 pr-4 text-right">Cantidad</th>
-                <th className="py-2 pr-4">Referencia y motivo</th><th className="py-2">Operación</th>
+                <th className="py-2 pr-4">Nota y motivo</th><th className="py-2">Acción</th>
               </tr></thead>
               <tbody>{history.data.rows.map((movement) => (
                 <tr key={movement.id} className="border-t border-hairline">
@@ -81,9 +81,9 @@ export function MovementHistory({ product, rows, isAdmin }: Props) {
                   <td className="py-3 pr-4">{LABELS[movement.operation.type] ?? movement.operation.type}</td>
                   <td className="py-3 pr-4 text-right font-semibold tnum">{movement.qty_delta > 0 ? '+' : ''}{formatQuantity(Number(movement.qty_delta), product.unit)}</td>
                   <td className="py-3 pr-4">{[movement.operation.reference, movement.operation.reason].filter(Boolean).join(' · ') || '—'}</td>
-                  <td className="py-3"><span className="block max-w-36 truncate font-mono text-xs" title={movement.operation.id}>{movement.operation.id}</span>
+                  <td className="py-3">
                     {isAdmin && !movement.reverses_movement_id && ['purchase', 'consumption', 'sale', 'shrinkage', 'adjustment'].includes(movement.operation.type) &&
-                      <button type="button" className="mt-1 text-xs underline" onClick={() => openReversal(movement)}>Revertir</button>}
+                      <button type="button" className="mt-1 text-xs underline" onClick={() => openReversal(movement)}>Deshacer</button>}
                   </td>
                 </tr>
               ))}</tbody>
@@ -98,14 +98,14 @@ export function MovementHistory({ product, rows, isAdmin }: Props) {
           </div>
         </>
       )}
-      {target && <Dialog open onClose={() => setTarget(null)} title="Revertir movimiento">
-        <p className="mb-4 text-sm">Se registrará un movimiento contrario por {formatQuantity(Math.abs(Number(target.qty_delta)), product.unit)}. Operación original: {target.operation.id}.</p>
+      {target && <Dialog open onClose={() => setTarget(null)} title="Deshacer cambio de stock">
+        <p className="mb-4 text-sm">Se hará el cambio contrario por {formatQuantity(Math.abs(Number(target.qty_delta)), product.unit)}. Quedará registrado en el historial.</p>
         <form onSubmit={submitReversal} className="flex flex-col gap-4">
           <Input label="Motivo (obligatorio)" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} autoFocus />
           {error && <p role="alert" className="text-sm text-carmine-fg">{error}</p>}
           <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setTarget(null)} disabled={reversal.isPending}>Cancelar</Button>
-            <Button type="submit" disabled={reversal.isPending || !reason.trim()}>{reversal.isPending ? 'Revirtiendo…' : 'Confirmar reversión'}</Button>
+            <Button type="submit" disabled={reversal.isPending || !reason.trim()}>{reversal.isPending ? 'Guardando…' : 'Confirmar'}</Button>
           </div>
         </form>
       </Dialog>}

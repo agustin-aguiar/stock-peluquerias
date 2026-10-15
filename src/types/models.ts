@@ -20,5 +20,5 @@ export type UserRole = Enums<'user_role'>
 
 export const ROLE_LABEL: Record<UserRole, string> = {
   admin: 'Administrador',
-  operator: 'Operador',
+  operator: 'Encargado de local',
 }

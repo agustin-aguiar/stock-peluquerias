@@ -51,7 +51,7 @@ export function ProductoDetallePage() {
       {rows.length === 0 && (
         <EmptyState
           title="Este producto no está habilitado en tu sucursal"
-          description={me.role === 'admin' ? 'Usá «Asignar stock» desde Inventario para cargarlo en una sucursal.' : undefined}
+          description={me.role === 'admin' ? 'Usá «Cargar stock» desde Inventario para agregarlo a un local.' : 'Pedile al administrador que haga la primera carga del producto.'}
         />
       )}
       {rows.length > 0 && (
@@ -63,18 +63,18 @@ export function ProductoDetallePage() {
                 <p className="font-semibold">{r.branch_name}</p>
               </div>
               <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm tnum md:grid-cols-3">
-                <dt className="text-muted">Saldo</dt>
+                <dt className="text-muted">Disponible</dt>
                 <dd className="font-semibold md:col-span-2">{formatQuantity(Number(r.balance ?? 0), p.unit)}</dd>
-                <dt className="text-muted">Mínimo</dt>
+                <dt className="text-muted">Stock mínimo</dt>
                 <dd className="md:col-span-2">{formatQuantity(Number(r.min_qty ?? 0), p.unit)}</dd>
                 <dt className="text-muted">Estado</dt>
                 <dd className="md:col-span-2">
                   <StatusChip row={r} />
                 </dd>
               </dl>
-              {me.role === 'admin' && !r.initialized_at && <Button onClick={() => setInitRow(r)}>Registrar saldo inicial</Button>}
+              {me.role === 'admin' && !r.initialized_at && <Button onClick={() => setInitRow(r)}>Hacer primera carga</Button>}
               {r.initialized_at && r.branch_active && p.is_active &&
-                <Button onClick={() => setMovementRow(r)}>Registrar movimiento</Button>}
+                <Button onClick={() => setMovementRow(r)}>Registrar entrada o salida</Button>}
             </li>
           ))}
         </ul>

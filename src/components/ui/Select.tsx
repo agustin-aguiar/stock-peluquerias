@@ -1,6 +1,6 @@
 import { useId, type SelectHTMLAttributes } from 'react'
 
-type Option = { value: string; label: string }
+type Option = { value: string; label: string; disabled?: boolean }
 type Props = SelectHTMLAttributes<HTMLSelectElement> & {
   label: string
   options: Option[]
@@ -25,7 +25,7 @@ export function Select({ label, options, placeholder, error, id, className = '',
       >
         {placeholder && <option value="">{placeholder}</option>}
         {options.map((o) => (
-          <option key={o.value} value={o.value}>
+          <option key={o.value} value={o.value} disabled={o.disabled}>
             {o.label}
           </option>
         ))}

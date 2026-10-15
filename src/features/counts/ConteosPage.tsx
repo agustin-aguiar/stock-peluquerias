@@ -61,7 +61,7 @@ export function ConteosPage() {
   }
 
   return <>
-    <PageHeader eyebrow="Control físico" title="Conteos" description="El operador registra lo observado; el administrador aprueba si el saldo no cambió desde entonces." />
+    <PageHeader eyebrow="Control físico" title="Conteo físico" description="Anotá cuánto hay realmente en el local. El administrador compara esa cantidad con el sistema antes de aprobar el cambio." />
     <section className="mb-8 rounded-lg border border-hairline bg-surface p-4">
       <h2 className="mb-3 text-lg font-semibold">Registrar observación</h2>
       <form onSubmit={submit} className="grid gap-3 md:grid-cols-2" noValidate>
@@ -72,7 +72,7 @@ export function ConteosPage() {
           options={(inventory.data ?? []).map((r) => ({ value: r.product_id as string, label: `${r.sku} · ${r.product_name}` }))} />
         <Input label={`Cantidad observada (${selected?.unit ?? 'unidad'})`} value={observed} onChange={(e) => setObserved(e.target.value)} inputMode="decimal" />
         <Input label="Nota (opcional)" value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} />
-        {selected && <p className="text-sm text-muted">Saldo al abrir el formulario: {formatQuantity(Number(selected.balance), selected.unit as 'unit' | 'ml' | 'g')}. La base guardará el saldo vigente al enviar.</p>}
+        {selected && <p className="text-sm text-muted">Según el sistema hay {formatQuantity(Number(selected.balance), selected.unit as 'unit' | 'ml' | 'g')}. Si hubo otro movimiento, se tomará el valor actualizado al enviar.</p>}
         {error && !review && <p role="alert" className="text-sm text-carmine-fg">{error}</p>}
         <div className="md:col-span-2"><Button type="submit" disabled={mutation.isPending || !selected || !parsed.ok}>Enviar conteo</Button></div>
       </form>
@@ -86,7 +86,7 @@ export function ConteosPage() {
         <div className="flex flex-wrap items-center justify-between gap-3"><div>
           <p className="label-caps text-muted">{row.branch_name} · {new Date(row.submitted_at).toLocaleString('es-UY')} · {row.status}</p>
           <h3 className="font-semibold">{row.product_name} <span className="text-muted">{row.sku}</span></h3>
-          <p className="text-sm">Saldo base {formatQuantity(Number(row.base_balance), row.unit)} → observado <strong>{formatQuantity(Number(row.observed_qty), row.unit)}</strong></p>
+          <p className="text-sm">En el sistema: {formatQuantity(Number(row.base_balance), row.unit)} → contado en el local: <strong>{formatQuantity(Number(row.observed_qty), row.unit)}</strong></p>
           {row.note && <p className="text-sm text-muted">{row.note}</p>}
         </div>{isAdmin && row.status === 'pending' && <div className="flex gap-2">
           <Button variant="secondary" onClick={() => { setReview({ row, kind: 'reject' }); setReason(''); setError(null) }}>Rechazar</Button>
@@ -97,7 +97,7 @@ export function ConteosPage() {
     {review && <Dialog open onClose={() => setReview(null)} title={review.kind === 'approve' ? 'Aprobar conteo' : 'Rechazar conteo'}>
       <form onSubmit={reviewCount} className="flex flex-col gap-4">
         <p className="text-sm">{review.row.product_name} · {review.row.branch_name}: {formatQuantity(Number(review.row.base_balance), review.row.unit)} → {formatQuantity(Number(review.row.observed_qty), review.row.unit)}</p>
-        {review.kind === 'approve' ? <p className="text-sm">La base rechazará la aprobación si hubo movimientos desde la observación.</p>
+        {review.kind === 'approve' ? <p className="text-sm">Si el stock cambió después del conteo, habrá que contar nuevamente antes de aprobar.</p>
           : <Input label="Motivo del rechazo" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} autoFocus />}
         {error && <p role="alert" className="text-sm text-carmine-fg">{error}</p>}
         <div className="flex justify-end gap-2"><Button variant="secondary" onClick={() => setReview(null)}>Cancelar</Button>

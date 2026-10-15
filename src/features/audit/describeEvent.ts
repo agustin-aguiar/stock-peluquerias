@@ -135,6 +135,26 @@ export function describeAuditEvent(event: AuditEvent, lookups: AuditLookups): Au
       return { summary: `Revirtió un movimiento de ${productAtBranch}.`, changes: stockDetails }
     case 'transfer.create':
       return { summary: `Creó una transferencia${transferQty} de ${transferRoute}.`, changes: [] }
+    case 'stock_request.create':
+    case 'stock_request.forward':
+    case 'stock_request.reject':
+    case 'stock_request.decline':
+    case 'stock_request.dispatch': {
+      const requestProduct = lookups.products[firstString(after.product_id, before.product_id) ?? '']
+      const requestBranch = lookups.branches[firstString(after.branch_id, before.branch_id) ?? ''] ?? 'un local'
+      const sourceBranch = lookups.branches[firstString(after.source_branch_id, before.source_branch_id) ?? ''] ?? 'otro local'
+      const requested = number(after.qty ?? before.qty)
+      const requestedQty = requested === undefined ? '' : ` de ${quantity(requested, requestProduct?.unit)}`
+      const subject = `${requestProduct?.name ?? 'un producto'}${requestedQty} para ${requestBranch}`
+      const summaries: Record<string, string> = {
+        'stock_request.create': `Pidió ${subject}.`,
+        'stock_request.forward': `Pidió a ${sourceBranch} que envíe ${subject}.`,
+        'stock_request.reject': `Rechazó el pedido de ${subject}.`,
+        'stock_request.decline': `Avisó que ${sourceBranch} no puede enviar ${subject}.`,
+        'stock_request.dispatch': `Confirmó el envío desde ${sourceBranch} de ${subject}.`,
+      }
+      return { summary: summaries[event.action] ?? 'Actualizó un pedido de stock.', changes: firstString(after.decision_note) ? [`Comentario: ${after.decision_note}`] : [] }
+    }
     case 'transfer.cancel':
       return { summary: `Canceló la transferencia${transferQty} de ${transferRoute}.`, changes: [] }
     case 'transfer.dispatch':
@@ -170,7 +190,7 @@ export function describeAuditEvent(event: AuditEvent, lookups: AuditLookups): Au
     default: {
       const area: Record<string, string> = {
         inventory: 'el inventario', product: 'un producto', branch: 'una sucursal',
-        profile: 'un usuario', transfer: 'una transferencia',
+        profile: 'un usuario', transfer: 'una transferencia', stock_request: 'un pedido de stock',
         physical_count: 'un conteo físico', import_batch: 'una importación',
       }
       return { summary: `Registró un cambio en ${area[event.entity_type] ?? 'el sistema'}.`, changes: targetChanges }

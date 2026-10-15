@@ -75,7 +75,7 @@ export function ProfileDialog({ open, onClose, profile, isSelf }: Props) {
           value={role}
           onChange={(e) => setRole(e.target.value as UserRole)}
           options={[
-            { value: 'operator', label: 'Operador de sucursal' },
+            { value: 'operator', label: 'Encargado de local' },
             { value: 'admin', label: 'Administrador de cadena' },
           ]}
           disabled={isSelf}
@@ -99,7 +99,7 @@ export function ProfileDialog({ open, onClose, profile, isSelf }: Props) {
         )}
         {!profile && (
           <p className="rounded-control bg-indigo-bg p-3 text-xs text-indigo-fg">
-            Después de guardar, creá la cuenta de acceso con este mismo email desde Supabase → Authentication → Add user (ver docs/operacion.md). La cuenta se vincula sola.
+            Después de guardar, el administrador debe crear el acceso con este mismo correo en Supabase. Encontrás los pasos en la guía de operación.
           </p>
         )}
         {serverError && (
