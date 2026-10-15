@@ -777,6 +777,10 @@ export type Database = {
       }
     }
     Functions: {
+      get_branch_join_link: { Args: { p_branch_id: string }; Returns: Json }
+      create_branch_join_link: { Args: { p_branch_id: string }; Returns: Json }
+      revoke_branch_join_link: { Args: { p_branch_id: string }; Returns: undefined }
+      join_branch_with_link: { Args: { p_token: string; p_full_name: string }; Returns: Database['public']['Tables']['profiles']['Row'] }
       create_my_chain: { Args: { p_chain_name: string; p_full_name: string }; Returns: Database['public']['Tables']['profiles']['Row'] }
       request_stock: { Args: { p_id: string; p_product_id: string; p_qty: number; p_note?: string | null }; Returns: Database['public']['Tables']['stock_requests']['Row'] }
       review_stock_request: { Args: { p_request_id: string; p_source_branch_id?: string | null; p_reason?: string | null }; Returns: Database['public']['Tables']['stock_requests']['Row'] }

@@ -92,6 +92,14 @@ export function describeAuditEvent(event: AuditEvent, lookups: AuditLookups): Au
   const transferQty = transfer ? ` de ${quantity(transfer.qty, transferUnit)}` : ''
 
   switch (event.action) {
+    case 'chain.create':
+      return { summary: `Creó la cadena ${firstString(after.name) ?? 'nueva'}.`, changes: [] }
+    case 'branch_join_link.create':
+      return { summary: `Creó un enlace de acceso para ${branchName}.`, changes: [] }
+    case 'branch_join_link.revoke':
+      return { summary: `Desactivó el enlace de acceso para ${branchName}.`, changes: [] }
+    case 'profile.join_branch':
+      return { summary: `Se unió como encargado a ${branchName}.`, changes: [] }
     case 'branch.create':
       return { summary: `Creó la sucursal ${firstString(after.name) ?? branchName}.`, changes: [] }
     case 'branch.update':

@@ -13,6 +13,7 @@ import { ROLE_LABEL, type Profile } from '@/types/models'
 import { useProfiles } from './api'
 import { ProfileDialog } from './ProfileDialog'
 import { inviteProfile } from './invitations'
+import { BulkInviteDialog } from './BulkInviteDialog'
 
 export function UsuariosPage() {
   const me = useCurrentProfile()
@@ -22,6 +23,7 @@ export function UsuariosPage() {
   const branches = useBranches()
   const [dialog, setDialog] = useState<{ open: boolean; profile: Profile | null }>({ open: false, profile: null })
   const [inviting, setInviting] = useState<string | null>(null)
+  const [bulkOpen, setBulkOpen] = useState(false)
   const branchName = (id: string | null) => branches.data?.find((b) => b.id === id)?.name ?? '—'
 
   const openNew = () => setDialog({ open: true, profile: null })
@@ -56,11 +58,12 @@ export function UsuariosPage() {
         eyebrow="Administración"
         title="Usuarios"
         description="Creá usuarios e invitálos por correo para que elijan su contraseña."
-        actions={
+        actions={<div className="flex gap-2">
+          <Button variant="secondary" onClick={() => setBulkOpen(true)}>Invitar varios</Button>
           <Button onClick={openNew}>
             <Plus size={16} aria-hidden /> Nuevo usuario
           </Button>
-        }
+        </div>}
       />
       {profiles.isPending && <LoadingState />}
       {profiles.isError && <ErrorState message={messageFor(profiles.error)} onRetry={() => void profiles.refetch()} />}
@@ -129,6 +132,7 @@ export function UsuariosPage() {
         </>
       )}
       <ProfileDialog open={dialog.open} onClose={close} profile={dialog.profile} isSelf={dialog.profile?.id === me.id} />
+      <BulkInviteDialog open={bulkOpen} onClose={() => setBulkOpen(false)} />
     </>
   )
 }

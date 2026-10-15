@@ -4,6 +4,7 @@ export const RPC_MESSAGES: Record<string, string> = {
   no_profile: 'Tu cuenta no tiene un perfil asignado. Contactá al administrador.',
   email_unconfirmed: 'Confirmá tu correo antes de crear la cadena.',
   profile_exists: 'Este correo ya está asignado a una cadena. Si necesitás acceso, hablá con su administrador.',
+  invalid_join_link: 'El enlace venció, fue desactivado o alcanzó el límite de usos. Pedí uno nuevo al administrador.',
   permission_denied: 'No tenés permiso para esta acción.',
   not_found: 'El registro no existe o no pertenece a tu cadena.',
   duplicate_code: 'Ya existe una sucursal con ese código.',
