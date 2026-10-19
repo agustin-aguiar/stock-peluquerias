@@ -1,4 +1,4 @@
-import { Boxes, ChartNoAxesCombined, CircleHelp, ClipboardList, FileSpreadsheet, History, House, Package, Send, Store, Truck, Users, type LucideIcon } from 'lucide-react'
+import { Boxes, ClipboardCheck, ChartNoAxesCombined, CircleHelp, ClipboardList, FileSpreadsheet, History, House, Package, Send, Store, Truck, Users, type LucideIcon } from 'lucide-react'
 
 export type NavItem = { to: string; label: string; icon: LucideIcon; adminOnly?: boolean }
 
@@ -6,6 +6,7 @@ export const NAV: NavItem[] = [
   { to: '/inicio', label: 'Inicio', icon: House, adminOnly: true },
   { to: '/tablero', label: 'Tablero', icon: ChartNoAxesCombined, adminOnly: true },
   { to: '/inventario', label: 'Inventario', icon: Boxes },
+  { to: '/cierre', label: 'Cierre de turno', icon: ClipboardCheck },
   { to: '/solicitudes', label: 'Pedidos de stock', icon: Send },
   { to: '/transferencias', label: 'Envíos entre locales', icon: Truck },
   { to: '/conteos', label: 'Conteo físico', icon: ClipboardList },

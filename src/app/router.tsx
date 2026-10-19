@@ -8,6 +8,7 @@ const LoginPage = lazy(() => import('@/features/auth/LoginPage').then((m) => ({ 
 const RegistroPage = lazy(() => import('@/features/auth/RegistroPage').then((m) => ({ default: m.RegistroPage })))
 const RecuperarPage = lazy(() => import('@/features/auth/RecuperarPage').then((m) => ({ default: m.RecuperarPage })))
 const RestablecerPage = lazy(() => import('@/features/auth/RestablecerPage').then((m) => ({ default: m.RestablecerPage })))
+const CierreTurnoPage = lazy(() => import('@/features/shift/CierreTurnoPage').then((m) => ({ default: m.CierreTurnoPage })))
 const SinPerfilPage = lazy(() => import('@/features/auth/SinPerfilPage').then((m) => ({ default: m.SinPerfilPage })))
 const SucursalesPage = lazy(() => import('@/features/branches/SucursalesPage').then((m) => ({ default: m.SucursalesPage })))
 const HomeRedirect = lazy(() => import('@/features/home/HomeRedirect').then((m) => ({ default: m.HomeRedirect })))
@@ -49,6 +50,7 @@ export const router = createBrowserRouter([
               { index: true, element: page(<HomeRedirect />) },
               { path: 'inventario', element: page(<InventarioPage />) },
               { path: 'inventario/:productId', element: page(<ProductoDetallePage />) },
+              { path: 'cierre', element: page(<CierreTurnoPage />) },
               { path: 'transferencias', element: page(<TransferenciasPage />) },
               { path: 'solicitudes', element: page(<SolicitudesPage />) },
               { path: 'ayuda', element: page(<AyudaPage />) },
