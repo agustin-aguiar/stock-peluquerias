@@ -87,3 +87,10 @@ Plantilla por semana (plan §24.1). Una entrada por semana de trabajo.
 - **Aplicado:** `0015`, `0016`, `0017` y `0018_security_advisors.sql` en el proyecto de producción, registradas en el historial de migraciones. No había correos repetidos entre perfiles.
 - **Simplificación:** la bandeja de pedidos usa dos consultas (pendientes y recientes) en lugar de paginar por rol; RLS ya limita lo que ve cada perfil.
 - **Pendiente manual:** ajustes de Auth en el dashboard (registro, Redirect URLs, SMTP propio) y prueba de entrega real de correos.
+
+## Cierre de turno — 2026-10-19
+
+- **Pedido:** que el encargado descuente al final de cada turno lo que se usó, sin entrar producto por producto.
+- **Implementado:** pantalla `/cierre` con todos los productos con stock del local y un campo «Usado» por fila. Se revisa un resumen y se descuenta todo de una vez como consumo interno con referencia «Cierre de turno». El encargado usa su local; el administrador elige uno. Para el encargado queda en la barra inferior del celular, en lugar de «Envíos entre locales», que sigue en «Más».
+- **Seguridad y reintentos:** reutiliza `register_movement`, sin cambios en la base. Cada fila usa su propia clave de idempotencia, de modo que reintentar después de un corte no descuenta dos veces. Si alguna fila falla, las guardadas se limpian y las fallidas quedan con su error para reintentar.
+- **Validación:** 64 pruebas unitarias, TypeScript, ESLint y compilación correctos.

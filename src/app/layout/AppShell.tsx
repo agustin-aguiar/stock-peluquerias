@@ -49,7 +49,7 @@ export function AppShell() {
   const items = NAV.filter((i) => !i.adminOnly || profile.role === 'admin')
   const primaryPaths = profile.role === 'admin'
     ? ['/inicio', '/inventario', '/solicitudes']
-    : ['/inventario', '/solicitudes', '/transferencias']
+    : ['/inventario', '/cierre', '/solicitudes']
   const primaryItems = items.filter((i) => primaryPaths.includes(i.to))
   const moreItems = items.filter((i) => !primaryPaths.includes(i.to))
   return (
