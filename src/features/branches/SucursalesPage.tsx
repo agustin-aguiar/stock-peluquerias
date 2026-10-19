@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pencil, Plus } from 'lucide-react'
+import { Link2, Pencil, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -8,10 +8,12 @@ import { messageFor } from '@/lib/errors'
 import type { Branch } from '@/types/models'
 import { useBranches } from './api'
 import { BranchDialog } from './BranchDialog'
+import { BranchJoinLinkDialog } from './BranchJoinLinkDialog'
 
 export function SucursalesPage() {
   const branches = useBranches()
   const [dialog, setDialog] = useState<{ open: boolean; branch: Branch | null }>({ open: false, branch: null })
+  const [joinBranch, setJoinBranch] = useState<Branch | null>(null)
 
   const openNew = () => setDialog({ open: true, branch: null })
   const openEdit = (b: Branch) => setDialog({ open: true, branch: b })
@@ -54,6 +56,7 @@ export function SucursalesPage() {
                     <Chip tone={b.is_active ? 'sage' : 'neutral'}>{b.is_active ? 'Activa' : 'Inactiva'}</Chip>
                   </td>
                   <td className="py-3 text-right">
+                    {b.is_active && <Button variant="secondary" onClick={() => setJoinBranch(b)} aria-label={`Invitar al local ${b.name}`}><Link2 size={14} aria-hidden /> Enlace de acceso</Button>}
                     <Button variant="secondary" onClick={() => openEdit(b)} aria-label={`Editar ${b.name}`}>
                       <Pencil size={14} aria-hidden /> Editar
                     </Button>
@@ -75,12 +78,14 @@ export function SucursalesPage() {
                 <Button variant="secondary" className="mt-3 w-full" onClick={() => openEdit(b)}>
                   <Pencil size={14} aria-hidden /> Editar
                 </Button>
+                {b.is_active && <Button variant="secondary" className="mt-2 w-full" onClick={() => setJoinBranch(b)}><Link2 size={14} aria-hidden /> Enlace de acceso</Button>}
               </li>
             ))}
           </ul>
         </>
       )}
       <BranchDialog open={dialog.open} onClose={close} branch={dialog.branch} />
+      <BranchJoinLinkDialog branch={joinBranch} onClose={() => setJoinBranch(null)} />
     </>
   )
 }

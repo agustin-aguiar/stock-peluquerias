@@ -44,10 +44,9 @@ export function AppShell() {
   const profile = useCurrentProfile()
   const requests = useStockRequests()
   const pendingRequests = (requests.data ?? []).filter((r) => profile.role === 'admin'
-    ? r.status === 'pending_admin' : r.status === 'pending_source' && r.source_branch_id === profile.branch_id).length
+    ? ['pending_admin', 'declined'].includes(r.status) : r.status === 'pending_source' && r.source_branch_id === profile.branch_id).length
   const [moreOpen, setMoreOpen] = useState(false)
-  const items = NAV.filter((i) => (!i.adminOnly || profile.role === 'admin') &&
-    (i.to !== '/solicitudes' || requests.isSuccess))
+  const items = NAV.filter((i) => !i.adminOnly || profile.role === 'admin')
   const primaryPaths = profile.role === 'admin'
     ? ['/inicio', '/inventario', '/solicitudes']
     : ['/inventario', '/solicitudes', '/transferencias']

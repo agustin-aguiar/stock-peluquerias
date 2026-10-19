@@ -1,17 +1,27 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { useCurrentProfile } from '@/app/guards'
 import type { Database } from '@/types/database'
 
 export type StockRequest = Database['public']['Tables']['stock_requests']['Row']
 
 export function useStockRequests() {
+  const profile = useCurrentProfile()
   return useQuery({
-    queryKey: ['stock-requests'],
+    queryKey: ['stock-requests', profile.id],
     queryFn: async (): Promise<StockRequest[]> => {
-      const { data, error } = await supabase.from('stock_requests').select('*')
-        .order('requested_at', { ascending: false }).limit(200)
-      if (error) throw error
-      return data
+      // RLS ya limita las filas a lo que cada perfil puede ver. Se traen todos
+      // los pedidos abiertos y el historial reciente.
+      const [open, recent] = await Promise.all([
+        supabase.from('stock_requests').select('*')
+          .in('status', ['pending_admin', 'pending_source', 'declined'])
+          .order('requested_at', { ascending: false }),
+        supabase.from('stock_requests').select('*')
+          .order('requested_at', { ascending: false }).limit(100),
+      ])
+      if (open.error) throw open.error
+      if (recent.error) throw recent.error
+      return [...new Map([...open.data, ...recent.data].map((row) => [row.id, row])).values()]
     },
     retry: false,
     refetchInterval: (query) => query.state.status === 'error' ? false : 30_000,
