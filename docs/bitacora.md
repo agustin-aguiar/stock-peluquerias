@@ -67,7 +67,7 @@ Plantilla por semana (plan §24.1). Una entrada por semana de trabajo.
 
 ## Pedidos, alertas y preparación de altas autoservicio — 2026-10-15
 
-- **Pedidos:** un operador puede pedir un producto que aún no está cargado en su local. Al aceptar el envío, el destino se habilita con saldo cero; la recepción suma lo que llegó. El administrador puede volver a asignar un pedido rechazado por el local elegido. La bandeja consulta todos los pendientes por páginas y muestra el historial reciente por separado.
+- **Pedidos:** un operador puede pedir un producto que aún no está cargado en su local. Al aceptar el envío, el destino se habilita con saldo cero; la recepción suma lo que llegó. El administrador puede volver a asignar un pedido rechazado por el local elegido. La bandeja consulta todos los pendientes y muestra el historial reciente por separado.
 - **Alertas:** los productos sin primera carga dejan de figurar como agotados o bajos de stock en la vista y el tablero; se cierran las alertas antiguas de ese caso.
 - **Cuentas:** página pública de registro con confirmación por correo; función `create_my_chain` que crea cadena y administrador solo para el usuario autenticado y confirmado; invitaciones desde Usuarios mediante una función privada que verifica sesión, administrador activo y pertenencia a la misma cadena. Un correo puede pertenecer a una sola cadena en el modelo actual.
 - **Configuración:** `supabase/config.toml` habilita registro local y exige diez caracteres; la producción requiere habilitar registro y comprobar las Redirect URLs en el dashboard después de aplicar las migraciones. Procedimiento en `docs/lanzamiento-autoservicio-2026-10-15.md`.
@@ -80,3 +80,10 @@ Plantilla por semana (plan §24.1). Una entrada por semana de trabajo.
 - **Seguridad:** `0017_branch_join_links.sql` no concede lectura directa de tokens. Las funciones comprueban administrador activo, correo confirmado, local activo, vencimiento, cupo y ausencia de un perfil previo. Las acciones relevantes quedan en auditoría.
 - **Validación:** 62 pruebas unitarias, TypeScript, ESLint, compilación y GitHub Actions aprobados. Las pruebas de integración nuevas siguen pendientes de un Supabase aislado; no se aplicaron las migraciones ni se publicó este PR en producción.
 - **Detalle y activación:** `docs/ultimos-cambios-2026-10-15.md` y `docs/lanzamiento-autoservicio-2026-10-15.md`.
+
+## Activación en producción — 2026-10-19
+
+- **Ensayo:** las migraciones `0015`–`0017` se ejecutaron sobre producción dentro de una transacción revertida, con 22 comprobaciones: correo sin confirmar, alta de cadena única, aislamiento entre cadenas, enlaces (crear, usar, revocar, token inventado), permisos de encargado, correo repetido entre cadenas y el circuito completo de un pedido sin primera carga (rechazo, reasignación, envío). Todas pasaron y se verificó que no quedaran datos.
+- **Aplicado:** `0015`, `0016`, `0017` y `0018_security_advisors.sql` en el proyecto de producción, registradas en el historial de migraciones. No había correos repetidos entre perfiles.
+- **Simplificación:** la bandeja de pedidos usa dos consultas (pendientes y recientes) en lugar de paginar por rol; RLS ya limita lo que ve cada perfil.
+- **Pendiente manual:** ajustes de Auth en el dashboard (registro, Redirect URLs, SMTP propio) y prueba de entrega real de correos.

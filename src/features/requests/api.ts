@@ -10,33 +10,18 @@ export function useStockRequests() {
   return useQuery({
     queryKey: ['stock-requests', profile.id],
     queryFn: async (): Promise<StockRequest[]> => {
-      const pending: StockRequest[] = []
-      const pageSize = 500
-      for (let from = 0; ; from += pageSize) {
-        let query = supabase.from('stock_requests').select('*')
-          .order('requested_at', { ascending: false }).range(from, from + pageSize - 1)
-        query = profile.role === 'admin'
-          ? query.in('status', ['pending_admin', 'declined'])
-          : query.eq('status', 'pending_source').eq('source_branch_id', profile.branch_id!)
-        const { data, error } = await query
-        if (error) throw error
-        pending.push(...data)
-        if (data.length < pageSize) break
-      }
-      if (profile.role === 'operator') {
-        for (let from = 0; ; from += pageSize) {
-          const { data, error } = await supabase.from('stock_requests').select('*')
-            .eq('branch_id', profile.branch_id!).eq('status', 'pending_admin')
-            .order('requested_at', { ascending: false }).range(from, from + pageSize - 1)
-          if (error) throw error
-          pending.push(...data)
-          if (data.length < pageSize) break
-        }
-      }
-      const { data: recent, error } = await supabase.from('stock_requests').select('*')
-        .order('requested_at', { ascending: false }).limit(100)
-      if (error) throw error
-      return [...new Map([...pending, ...recent].map((row) => [row.id, row])).values()]
+      // RLS ya limita las filas a lo que cada perfil puede ver. Se traen todos
+      // los pedidos abiertos y el historial reciente.
+      const [open, recent] = await Promise.all([
+        supabase.from('stock_requests').select('*')
+          .in('status', ['pending_admin', 'pending_source', 'declined'])
+          .order('requested_at', { ascending: false }),
+        supabase.from('stock_requests').select('*')
+          .order('requested_at', { ascending: false }).limit(100),
+      ])
+      if (open.error) throw open.error
+      if (recent.error) throw recent.error
+      return [...new Map([...open.data, ...recent.data].map((row) => [row.id, row])).values()]
     },
     retry: false,
     refetchInterval: (query) => query.state.status === 'error' ? false : 30_000,
