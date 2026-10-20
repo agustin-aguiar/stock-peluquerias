@@ -46,7 +46,7 @@ export function UsuariosPage() {
   function StatusChips({ p }: { p: Profile }) {
     return (
       <span className="flex flex-wrap gap-1">
-        <Chip tone={p.is_active ? 'sage' : 'neutral'}>{p.is_active ? 'Activo' : 'Inactivo'}</Chip>
+        {!p.is_active && <Chip tone="neutral">Inactivo</Chip>}
         {!p.auth_user_id && <Chip tone="amber">Sin acceso</Chip>}
       </span>
     )
@@ -88,19 +88,21 @@ export function UsuariosPage() {
                     {p.full_name}
                     {p.id === me.id && <span className="ml-2 text-xs text-muted">(vos)</span>}
                   </td>
-                  <td className="py-3 pr-4">{p.email}</td>
-                  <td className="py-3 pr-4">{ROLE_LABEL[p.role]}</td>
+                  <td className="py-3 pr-4 text-muted">{p.email}</td>
+                  <td className="py-3 pr-4 whitespace-nowrap">{ROLE_LABEL[p.role]}</td>
                   <td className="py-3 pr-4">{p.role === 'operator' ? branchName(p.branch_id) : 'Toda la cadena'}</td>
                   <td className="py-3 pr-4">
                     <StatusChips p={p} />
                   </td>
-                  <td className="py-3 text-right">
-                    {!p.auth_user_id && p.is_active && <Button variant="secondary" disabled={inviting === p.id} onClick={() => void sendInvite(p)}>
-                      {inviting === p.id ? 'Enviando…' : 'Enviar invitación'}
-                    </Button>}
-                    <Button variant="secondary" onClick={() => openEdit(p)} aria-label={`Editar ${p.full_name}`}>
-                      <Pencil size={14} aria-hidden /> Editar
-                    </Button>
+                  <td className="py-3">
+                    <div className="flex justify-end gap-2 whitespace-nowrap">
+                      {!p.auth_user_id && p.is_active && <Button variant="secondary" disabled={inviting === p.id} onClick={() => void sendInvite(p)}>
+                        {inviting === p.id ? 'Enviando…' : 'Enviar invitación'}
+                      </Button>}
+                      <Button variant="secondary" onClick={() => openEdit(p)} aria-label={`Editar ${p.full_name}`}>
+                        <Pencil size={14} aria-hidden /> Editar
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}

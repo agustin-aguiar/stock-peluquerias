@@ -110,10 +110,10 @@ export function CierreTurnoPage() {
               const id = r.product_id!
               const unit = (r.unit ?? 'unit') as UnitKind
               return (
-                <li key={id} className="grid grid-cols-[1fr_8rem] items-start gap-3 p-3">
+                <li key={id} className={`grid grid-cols-[1fr_7.5rem] items-start gap-3 p-3 ${inputs[id]?.trim() ? 'bg-canvas' : ''}`}>
                   <div className="min-w-0 pt-1">
                     <p className="font-semibold">{r.product_name}</p>
-                    <p className="text-xs text-muted tnum">{r.sku} · hay {formatQuantity(Number(r.balance ?? 0), unit)}</p>
+                    <p className="text-xs text-muted tnum">{r.sku} · hay <span className="font-semibold text-ink">{formatQuantity(Number(r.balance ?? 0), unit)}</span></p>
                   </div>
                   <Input label={`Usado (${UNIT_LABEL[unit]})`} value={inputs[id] ?? ''} inputMode={unit === 'unit' ? 'numeric' : 'decimal'}
                     onChange={(e) => {
@@ -126,9 +126,9 @@ export function CierreTurnoPage() {
               )
             })}
           </ul>
-          <div className="sticky bottom-20 mt-4 flex items-center justify-between gap-3 rounded-lg border border-hairline bg-surface p-3 md:bottom-4">
-            <p className="text-sm">{lines.length === 0 ? 'Todavía no anotaste consumos.' : `${lines.length} producto${lines.length === 1 ? '' : 's'} para descontar.`}</p>
-            <Button disabled={!canSave} onClick={() => setConfirming(true)}>Revisar y guardar</Button>
+          <div className="sticky bottom-20 mt-4 flex items-center justify-between gap-3 rounded-lg border border-hairline bg-surface p-3 shadow-[0_4px_16px_rgb(28_25_23/0.08)] md:bottom-4">
+            <p className="min-w-0 text-sm">{lines.length === 0 ? <span className="text-muted">Sin consumos anotados</span> : <><strong className="tnum">{lines.length}</strong> producto{lines.length === 1 ? '' : 's'} para descontar</>}</p>
+            <Button className="shrink-0" disabled={!canSave} onClick={() => setConfirming(true)}>Revisar</Button>
           </div>
         </>
       )}

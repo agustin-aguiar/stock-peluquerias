@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router'
-import { LogOut, Menu } from 'lucide-react'
+import { LogOut, Menu, Scissors } from 'lucide-react'
 import { OfflineBanner } from '@/components/ui/OfflineBanner'
 import { Dialog } from '@/components/ui/Dialog'
 import { useCurrentProfile } from '@/app/guards'
@@ -20,7 +20,7 @@ function SideLink({ item, count }: { item: NavItem; count?: number }) {
         `flex items-center gap-3 rounded-control px-3 py-2 text-sm font-semibold ${isActive ? 'bg-ink text-white' : 'text-ink hover:bg-canvas'}`
       }
     >
-      <Icon size={18} aria-hidden /> {item.label}{count ? <span className="ml-auto rounded-full bg-amber-100 px-2 text-xs text-amber-900">{count}</span> : null}
+      <Icon size={18} aria-hidden /> {item.label}{count ? <span className="ml-auto min-w-5 rounded-full bg-amber-fg px-1.5 text-center text-xs leading-5 text-white" aria-label={`${count} pedidos pendientes`}>{count}</span> : null}
     </NavLink>
   )
 }
@@ -34,8 +34,11 @@ function BottomLink({ item, count }: { item: NavItem; count?: number }) {
         `flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-semibold ${isActive ? 'text-ink' : 'text-muted'}`
       }
     >
-      <Icon size={20} aria-hidden />
-      {item.label}{count ? <span className="rounded-full bg-amber-100 px-1.5 text-[10px] text-amber-900" aria-label={`${count} pedidos pendientes`}>{count}</span> : null}
+      <span className="relative">
+        <Icon size={20} aria-hidden />
+        {count ? <span className="absolute -right-2.5 -top-1.5 min-w-4 rounded-full bg-amber-fg px-1 text-center text-[10px] leading-4 text-white" aria-label={`${count} pedidos pendientes`}>{count}</span> : null}
+      </span>
+      {item.short ?? item.label}
     </NavLink>
   )
 }
@@ -56,14 +59,17 @@ export function AppShell() {
     <ActiveBranchProvider>
       <div className="min-h-dvh md:grid md:grid-cols-[16rem_1fr]">
         <aside className="hidden border-r border-hairline bg-surface p-4 md:flex md:flex-col md:gap-1">
-          <p className="label-caps mb-3 px-3 text-muted">Stock Peluquerías</p>
+          <p className="mb-4 flex items-center gap-2 px-3 text-base font-bold tracking-tight">
+            <span className="grid size-7 place-items-center rounded-control bg-ink text-white"><Scissors size={15} aria-hidden /></span>
+            Stock Peluquerías
+          </p>
           {items.map((i) => (
             <SideLink key={i.to} item={i} count={i.to === '/solicitudes' ? pendingRequests : undefined} />
           ))}
         </aside>
         <div className="flex min-h-dvh flex-col">
           <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-hairline bg-surface/95 px-4 py-3 backdrop-blur">
-            <span className="font-bold md:hidden">Stock</span>
+            <span className="grid size-8 place-items-center rounded-control bg-ink text-white md:hidden" aria-label="Stock Peluquerías"><Scissors size={16} aria-hidden /></span>
             <BranchPill />
             <div className="ml-auto flex items-center gap-3 text-sm">
               <span className="hidden sm:block">

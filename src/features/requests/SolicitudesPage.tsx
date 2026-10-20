@@ -14,6 +14,8 @@ import { messageFor } from '@/lib/errors'
 import { formatQuantity, parseQuantity, UNIT_NAME } from '@/lib/quantity'
 import type { UnitKind } from '@/types/models'
 import { useRequestTransferStatuses, useStockRequestAction, useStockRequests, type StockRequest } from './api'
+import { formatDateTime } from '@/lib/dates'
+import { Chip } from '@/components/ui/Chip'
 
 type Choice = { row: StockRequest; kind: 'forward' | 'reject' | 'accept' | 'decline' }
 
@@ -91,30 +93,31 @@ export function SolicitudesPage() {
     } catch (err) { setError(messageFor(err)) }
   }
 
-  function label(row: StockRequest) {
-    if (row.status === 'pending_admin') return 'Esperando al administrador'
-    if (row.status === 'pending_source') return 'Esperando al local que envía'
-    if (row.status === 'rejected') return 'Rechazado por el administrador'
-    if (row.status === 'declined') return 'El local elegido no pudo enviarlo'
+  function label(row: StockRequest): [string, 'amber' | 'indigo' | 'carmine' | 'sage' | 'neutral'] {
+    if (row.status === 'pending_admin') return ['Esperando al administrador', 'amber']
+    if (row.status === 'pending_source') return ['Esperando al local que envía', 'amber']
+    if (row.status === 'rejected') return ['Rechazado', 'neutral']
+    if (row.status === 'declined') return ['El local elegido no pudo enviarlo', 'carmine']
     const transfer = row.transfer_id ? transferById.get(row.transfer_id) : undefined
-    if (transfer?.status === 'received') return 'Recibido'
-    if (transfer?.status === 'resolved') return 'Diferencia resuelta'
-    if (transfer?.status === 'disputed') return 'Con diferencia informada'
-    return 'En camino al local solicitante'
+    if (transfer?.status === 'received') return ['Recibido', 'sage']
+    if (transfer?.status === 'resolved') return ['Diferencia resuelta', 'sage']
+    if (transfer?.status === 'disputed') return ['Con diferencia informada', 'amber']
+    return ['En camino', 'indigo']
   }
 
   function card(row: StockRequest) {
     const p = productById.get(row.product_id)
     const unit: UnitKind = p?.unit ?? 'unit'
     return <li key={row.id} className="rounded-lg border border-hairline bg-surface p-4">
-      <p className="text-xs text-muted">{new Date(row.requested_at).toLocaleString('es-UY')} · {label(row)}</p>
-      <h3 className="mt-1 font-semibold">{p?.name ?? 'Producto'} · {formatQuantity(Number(row.qty), unit)}</h3>
-      <p className="text-sm">Lo pide: {branchById.get(row.branch_id)?.name ?? 'Sucursal'}</p>
-      {row.source_branch_id && <p className="text-sm">Lo envía: {branchById.get(row.source_branch_id)?.name ?? 'Sucursal'}</p>}
+      <p className="flex flex-wrap items-center gap-2 text-xs text-muted"><Chip tone={label(row)[1]}>{label(row)[0]}</Chip>{formatDateTime(row.requested_at)}</p>
+      <h3 className="mt-2 font-semibold">{p?.name ?? 'Producto'} · <span className="tnum">{formatQuantity(Number(row.qty), unit)}</span></h3>
+      <p className="text-sm">{row.source_branch_id
+        ? <>{branchById.get(row.source_branch_id)?.name ?? 'Sucursal'} → {branchById.get(row.branch_id)?.name ?? 'Sucursal'}</>
+        : <>Lo pide {branchById.get(row.branch_id)?.name ?? 'Sucursal'}</>}</p>
       {row.note && <p className="mt-1 text-sm text-muted">Nota del pedido: {row.note}</p>}
       {row.decision_note && <p className="mt-1 text-sm text-muted">Respuesta: {row.decision_note}</p>}
       {row.transfer_id && <Link to="/transferencias" className="mt-2 inline-block text-sm font-semibold underline">Ver envío y recepción</Link>}
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-3 flex flex-wrap gap-2 empty:hidden">
         {admin && ['pending_admin', 'declined'].includes(row.status) && <>
           <Button onClick={() => openChoice(row, 'forward')}>Elegir local que envía</Button>
           <Button variant="secondary" onClick={() => openChoice(row, 'reject')}>Rechazar</Button>

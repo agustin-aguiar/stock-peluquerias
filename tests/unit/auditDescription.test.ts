@@ -23,7 +23,7 @@ describe('descripción de auditoría', () => {
       old_values: { branch_id: 'centro', product_id: 'shampoo', min_qty: 25 },
       new_values: { branch_id: 'centro', product_id: 'shampoo', min_qty: 50 },
     }), lookups)
-    expect(description.summary).toBe('Cambió el mínimo de Shampoo en Centro de 25,00 ml a 50,00 ml.')
+    expect(description.summary).toBe('Cambió el mínimo de Shampoo en Centro de 25 ml a 50 ml.')
     expect(JSON.stringify(description)).not.toContain('product_id')
   })
 
@@ -32,8 +32,8 @@ describe('descripción de auditoría', () => {
       old_values: { branch_id: 'pocitos', product_id: 'shampoo', balance: 100 },
       new_values: { branch_id: 'pocitos', product_id: 'shampoo', balance: 75 },
     }), lookups)
-    expect(description.summary).toBe('Registró un consumo de 25,00 ml de Shampoo en Pocitos.')
-    expect(description.changes).toEqual(['Saldo resultante: 75,00 ml'])
+    expect(description.summary).toBe('Registró un consumo de 25 ml de Shampoo en Pocitos.')
+    expect(description.changes).toEqual(['Saldo resultante: 75 ml'])
   })
 
   it('explica una transferencia resuelta y sus cantidades', () => {
@@ -42,7 +42,7 @@ describe('descripción de auditoría', () => {
       new_values: { qty_received: 70, qty_returned: 20, qty_lost: 10 },
     }), lookups)
     expect(description.summary).toBe('Resolvió la diferencia en la transferencia de Shampoo de Centro a Pocitos.')
-    expect(description.changes).toEqual(['Recibido: 70,00 ml', 'Devuelto: 20,00 ml', 'Merma: 10,00 ml'])
+    expect(description.changes).toEqual(['Recibido: 70 ml', 'Devuelto: 20 ml', 'Merma: 10 ml'])
   })
 
   it('muestra cambios de usuario y omite identificadores internos', () => {

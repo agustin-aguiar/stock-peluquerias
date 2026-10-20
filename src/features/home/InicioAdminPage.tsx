@@ -3,6 +3,7 @@ import { Package, Store, Users } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { Stats } from '@/components/ui/Stats'
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/States'
 import { useActiveBranch } from '@/features/branches/activeBranch'
 import { useBranches } from '@/features/branches/api'
@@ -36,26 +37,17 @@ export function InicioAdminPage() {
           return (
             <li key={b.id} className="flex flex-col gap-3 rounded-lg border border-hairline bg-surface p-5">
               <div className="flex items-start justify-between gap-2">
-                <div>
+                <div className="min-w-0">
                   <p className="label-caps text-muted">{b.code}</p>
                   <h2 className="text-lg font-semibold">{b.name}</h2>
                 </div>
-                {open > 0 ? <Chip tone="amber">{open} alertas</Chip> : <Chip tone="sage">Sin alertas</Chip>}
+                {open > 0 ? <Chip tone="amber">{open} {open === 1 ? 'alerta' : 'alertas'}</Chip> : <Chip tone="sage">Sin alertas</Chip>}
               </div>
-              <dl className="grid grid-cols-3 gap-2 text-center tnum">
-                <div>
-                  <dt className="label-caps text-muted">Productos en el local</dt>
-                  <dd className="text-2xl font-bold">{s.enabled}</dd>
-                </div>
-                <div>
-                  <dt className="label-caps text-muted">Con poco stock</dt>
-                  <dd className={`text-2xl font-bold ${s.belowMin > 0 ? 'text-amber-fg' : ''}`}>{s.belowMin}</dd>
-                </div>
-                <div>
-                  <dt className="label-caps text-muted">Sin primera carga</dt>
-                  <dd className="text-2xl font-bold">{s.uninitialized}</dd>
-                </div>
-              </dl>
+              <Stats items={[
+                { label: 'Productos', value: s.enabled },
+                { label: 'Queda poco', value: s.belowMin, tone: 'amber' },
+                { label: 'Sin cargar', value: s.uninitialized, tone: 'amber' },
+              ]} />
               <Button
                 variant="secondary"
                 onClick={() => {

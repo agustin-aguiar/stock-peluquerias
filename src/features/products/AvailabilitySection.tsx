@@ -8,7 +8,7 @@ import { ErrorState, LoadingState } from '@/components/ui/States'
 import { useToast } from '@/components/ui/Toast'
 import { useBranches } from '@/features/branches/api'
 import { messageFor } from '@/lib/errors'
-import { formatNumber, formatQuantity, parseQuantity, UNIT_LABEL } from '@/lib/quantity'
+import { formatForInput, formatQuantity, parseQuantity, UNIT_LABEL } from '@/lib/quantity'
 import type { Branch, InventoryStatus, UnitKind } from '@/types/models'
 import { useEnableProduct, useProductAvailability, useSetMinQty } from './api'
 
@@ -19,7 +19,7 @@ function AvailabilityRow({ productId, unit, branch, row }: RowProps) {
   const toast = useToast()
   const enable = useEnableProduct()
   const setMin = useSetMinQty()
-  const [minStr, setMinStr] = useState(() => (row ? formatNumber(Number(row.min_qty ?? 0), unit) : '0'))
+  const [minStr, setMinStr] = useState(() => (row ? formatForInput(Number(row.min_qty ?? 0), unit) : '0'))
   const [error, setError] = useState<string | null>(null)
   const pending = enable.isPending || setMin.isPending
 

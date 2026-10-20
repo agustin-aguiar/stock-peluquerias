@@ -53,13 +53,15 @@ export function SucursalesPage() {
                   <td className="py-3 pr-4 font-semibold tnum">{b.code}</td>
                   <td className="py-3 pr-4">{b.name}</td>
                   <td className="py-3 pr-4">
-                    <Chip tone={b.is_active ? 'sage' : 'neutral'}>{b.is_active ? 'Activa' : 'Inactiva'}</Chip>
+                    {!b.is_active && <Chip tone="neutral">Inactiva</Chip>}
                   </td>
-                  <td className="py-3 text-right">
-                    {b.is_active && <Button variant="secondary" onClick={() => setJoinBranch(b)} aria-label={`Invitar al local ${b.name}`}><Link2 size={14} aria-hidden /> Enlace de acceso</Button>}
-                    <Button variant="secondary" onClick={() => openEdit(b)} aria-label={`Editar ${b.name}`}>
-                      <Pencil size={14} aria-hidden /> Editar
-                    </Button>
+                  <td className="py-3">
+                    <div className="flex justify-end gap-2 whitespace-nowrap">
+                      {b.is_active && <Button variant="secondary" onClick={() => setJoinBranch(b)} aria-label={`Invitar al local ${b.name}`}><Link2 size={14} aria-hidden /> Enlace de acceso</Button>}
+                      <Button variant="secondary" onClick={() => openEdit(b)} aria-label={`Editar ${b.name}`}>
+                        <Pencil size={14} aria-hidden /> Editar
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -73,7 +75,7 @@ export function SucursalesPage() {
                     <p className="label-caps text-muted">{b.code}</p>
                     <p className="font-semibold">{b.name}</p>
                   </div>
-                  <Chip tone={b.is_active ? 'sage' : 'neutral'}>{b.is_active ? 'Activa' : 'Inactiva'}</Chip>
+                  {!b.is_active && <Chip tone="neutral">Inactiva</Chip>}
                 </div>
                 <Button variant="secondary" className="mt-3 w-full" onClick={() => openEdit(b)}>
                   <Pencil size={14} aria-hidden /> Editar

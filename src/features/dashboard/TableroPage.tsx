@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { Input } from '@/components/ui/Input'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
+import { Stats } from '@/components/ui/Stats'
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/States'
 import { messageFor } from '@/lib/errors'
 import { formatQuantity } from '@/lib/quantity'
@@ -34,12 +35,14 @@ export function TableroPage() {
     {snapshot.isError && <ErrorState message={messageFor(snapshot.error)} onRetry={() => void snapshot.refetch()} />}
     {snapshot.data && <>
       <p className="mb-3 text-sm text-muted">Los productos con poco stock, agotados y los envíos pendientes muestran la situación de hoy. Los productos usados y perdidos corresponden a las fechas elegidas.</p>
-      <ul className="mb-8 grid gap-3 md:grid-cols-3">{branches.filter((b) => branchId === 'all' || b.branch_id === branchId).map((b) =>
-        <li key={b.branch_id} className="rounded-lg border border-hairline bg-surface p-4">
-          <h2 className="font-semibold">{b.branch_name}</h2>
-          <dl className="mt-2 grid grid-cols-3 gap-2 text-center text-sm"><div><dt>Queda poco</dt><dd className="text-xl font-bold">{b.below_min}</dd></div>
-            <div><dt>Agotados</dt><dd className="text-xl font-bold">{b.zero_balance}</dd></div>
-            <div><dt>Envíos pendientes</dt><dd className="text-xl font-bold">{b.open_transfers}</dd></div></dl>
+      <ul className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{branches.filter((b) => branchId === 'all' || b.branch_id === branchId).map((b) =>
+        <li key={b.branch_id} className="flex flex-col gap-3 rounded-lg border border-hairline bg-surface p-5">
+          <h2 className="text-lg font-semibold">{b.branch_name}</h2>
+          <Stats items={[
+            { label: 'Queda poco', value: b.below_min, tone: 'amber' },
+            { label: 'Agotados', value: b.zero_balance, tone: 'carmine' },
+            { label: 'Envíos en curso', value: b.open_transfers },
+          ]} />
         </li>)}</ul>
       <h2 className="mb-3 text-lg font-semibold">Productos usados o perdidos</h2>
       {usage.length === 0 && <EmptyState title="Sin salidas en este período" />}
