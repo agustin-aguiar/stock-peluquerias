@@ -40,7 +40,8 @@ describe('parseQuantity', () => {
 describe('formatNumber / formatQuantity', () => {
   it('ml y g con dos decimales, punto de miles y coma decimal', () => {
     expect(formatNumber(1974.5, 'ml')).toBe('1.974,50')
-    expect(formatNumber(0, 'g')).toBe('0,00')
+    expect(formatNumber(0, 'g')).toBe('0')
+    expect(formatNumber(2500, 'ml')).toBe('2.500')
     expect(formatNumber(1234567.8, 'ml')).toBe('1.234.567,80')
     expect(formatQuantity(1974.5, 'ml')).toBe('1.974,50 ml')
   })
@@ -58,14 +59,17 @@ describe('formatForInput', () => {
   it('unidades: dígitos enteros sin agrupar', () => {
     expect(formatForInput(100000, 'unit')).toBe('100000')
   })
-  it('ml/g: igual a formatNumber', () => {
+  it('ml/g: siempre con coma decimal para no confundir el punto de miles', () => {
     expect(formatForInput(1974.5, 'ml')).toBe('1.974,50')
+    expect(formatForInput(100000, 'ml')).toBe('100.000,00')
   })
   it('round-trip: parseQuantity(formatForInput(v, u), u) devuelve v', () => {
     const cases: Array<[number, 'unit' | 'ml' | 'g']> = [
       [100000, 'unit'],
       [6, 'unit'],
       [1974.5, 'ml'],
+      [2500, 'ml'],
+      [100000, 'g'],
       [0, 'g'],
     ]
     for (const [v, u] of cases) {

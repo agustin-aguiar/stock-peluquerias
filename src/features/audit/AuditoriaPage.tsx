@@ -7,6 +7,20 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/ui/States'
 import { messageFor } from '@/lib/errors'
 import { AUDIT_PAGE_SIZE, useAuditEvents, type AuditEvent, type AuditLookups } from './api'
 import { describeAuditEvent } from './describeEvent'
+import { formatDate } from '@/lib/dates'
+
+function formatTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
+function groupByDay(rows: AuditEvent[]): [string, AuditEvent[]][] {
+  const groups = new Map<string, AuditEvent[]>()
+  for (const row of rows) {
+    const day = formatDate(row.created_at)
+    groups.set(day, [...(groups.get(day) ?? []), row])
+  }
+  return [...groups]
+}
 
 const entities = [
   { value: '', label: 'Todos' },
@@ -26,18 +40,17 @@ function AuditItem({ event, lookups }: { event: AuditEvent; lookups: AuditLookup
     ? lookups.actors[event.actor_profile_id] ?? 'Usuario no disponible'
     : 'Sistema'
 
-  return <li className="rounded-lg border border-hairline bg-surface p-4 text-sm">
-    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-      <p><span className="text-muted">Quién: </span><span className="font-semibold">{actor}</span></p>
-      <time className="text-muted" dateTime={event.created_at}>{new Date(event.created_at).toLocaleString('es-UY')}</time>
-    </div>
-    <p className="mt-2"><span className="font-semibold">Qué hizo: </span>{description.summary}</p>
-    {description.changes.length > 0 && <details className="mt-2">
-      <summary className="cursor-pointer text-muted underline">Ver detalles</summary>
+  return <li className="grid grid-cols-[3.25rem_1fr] gap-x-3 px-4 py-3 text-sm">
+    <time className="pt-px text-muted tnum" dateTime={event.created_at}>{formatTime(event.created_at)}</time>
+    <div className="min-w-0">
+      <p><span className="font-semibold">{actor}</span> <span className="text-muted">·</span> {description.summary}</p>
+      {description.changes.length > 0 && <details className="mt-1">
+      <summary className="cursor-pointer text-xs text-muted underline-offset-2 hover:underline">Ver qué cambió</summary>
       <ul className="mt-2 list-disc space-y-1 pl-5">
         {description.changes.map((change) => <li key={change}>{change}</li>)}
       </ul>
-    </details>}
+      </details>}
+    </div>
   </li>
 }
 
@@ -60,7 +73,14 @@ export function AuditoriaPage() {
     {events.isError && <ErrorState message={messageFor(events.error)} onRetry={() => void events.refetch()} />}
     {events.data?.rows.length === 0 && <EmptyState title="Sin cambios para estos filtros" />}
     {events.data && events.data.rows.length > 0 && <>
-      <ul className="space-y-3">{events.data.rows.map((event) => <AuditItem key={event.id} event={event} lookups={events.data.lookups} />)}</ul>
+      <div className="flex flex-col gap-5">
+        {groupByDay(events.data.rows).map(([day, rows]) => <section key={day}>
+          <h2 className="label-caps mb-2 text-muted">{day}</h2>
+          <ul className="divide-y divide-hairline rounded-lg border border-hairline bg-surface">
+            {rows.map((event) => <AuditItem key={event.id} event={event} lookups={events.data.lookups} />)}
+          </ul>
+        </section>)}
+      </div>
       <div className="mt-4 flex items-center justify-between gap-3 text-sm text-muted">
         <span>{page * AUDIT_PAGE_SIZE + 1}–{Math.min((page + 1) * AUDIT_PAGE_SIZE, events.data.count)} de {events.data.count}</span>
         <div className="flex gap-2"><Button variant="secondary" disabled={page === 0} onClick={() => setPage(page - 1)}>Anterior</Button>

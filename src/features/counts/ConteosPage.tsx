@@ -11,6 +11,7 @@ import { useBranches } from '@/features/branches/api'
 import { messageFor } from '@/lib/errors'
 import { formatQuantity, parseQuantity } from '@/lib/quantity'
 import { useCountAction, useCountInventory, useCounts, type CountRow } from './api'
+import { formatDateTime } from '@/lib/dates'
 
 export function ConteosPage() {
   const me = useCurrentProfile()
@@ -84,7 +85,7 @@ export function ConteosPage() {
       {counts.data?.length === 0 && <EmptyState title="No hay conteos para este estado" />}
       <ul className="grid gap-3">{counts.data?.map((row) => <li key={row.id} className="rounded-lg border border-hairline bg-surface p-4">
         <div className="flex flex-wrap items-center justify-between gap-3"><div>
-          <p className="label-caps text-muted">{row.branch_name} · {new Date(row.submitted_at).toLocaleString('es-UY')} · {row.status}</p>
+          <p className="label-caps text-muted">{row.branch_name} · {formatDateTime(row.submitted_at)} · {row.status}</p>
           <h3 className="font-semibold">{row.product_name} <span className="text-muted">{row.sku}</span></h3>
           <p className="text-sm">En el sistema: {formatQuantity(Number(row.base_balance), row.unit)} → contado en el local: <strong>{formatQuantity(Number(row.observed_qty), row.unit)}</strong></p>
           {row.note && <p className="text-sm text-muted">{row.note}</p>}

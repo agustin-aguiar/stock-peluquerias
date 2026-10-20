@@ -69,7 +69,7 @@ export function ProductoDetallePage() {
                 <dd className="md:col-span-2">{formatQuantity(Number(r.min_qty ?? 0), p.unit)}</dd>
                 <dt className="text-muted">Estado</dt>
                 <dd className="md:col-span-2">
-                  <StatusChip row={r} />
+                  <StatusChip row={r} showOk />
                 </dd>
               </dl>
               {me.role === 'admin' && !r.initialized_at && <Button onClick={() => setInitRow(r)}>Hacer primera carga</Button>}

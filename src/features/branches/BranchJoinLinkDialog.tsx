@@ -4,6 +4,7 @@ import { Dialog } from '@/components/ui/Dialog'
 import { messageFor } from '@/lib/errors'
 import { supabase } from '@/lib/supabase'
 import type { Branch } from '@/types/models'
+import { formatDateTime } from '@/lib/dates'
 
 type LinkInfo = { token: string; expires_at: string; uses: number; max_uses: number; revoked_at: string | null }
 
@@ -56,7 +57,7 @@ export function BranchJoinLinkDialog({ branch, onClose }: { branch: Branch | nul
       {valid ? <>
         <label className="block font-semibold" htmlFor="branch-join-url">Enlace de registro</label>
         <input id="branch-join-url" readOnly value={url} className="w-full rounded-control border border-hairline bg-canvas p-2 text-xs" onFocus={(e) => e.target.select()} />
-        <p className="text-muted">Usos: {link.uses} de {link.max_uses}. Vence el {new Date(link.expires_at).toLocaleString('es-UY')}.</p>
+        <p className="text-muted">Usos: {link.uses} de {link.max_uses}. Vence el {formatDateTime(link.expires_at)}.</p>
         <Button onClick={async () => { try { await navigator.clipboard.writeText(url); setCopied(true) } catch { setError('No se pudo copiar. Seleccioná el enlace y copialo manualmente.') } }}>{copied ? 'Copiado' : 'Copiar enlace'}</Button>
         <Button variant="secondary" disabled={pending} onClick={() => void revoke()}>Desactivar enlace</Button>
       </> : <p className="text-muted">No hay un enlace activo para este local.</p>}

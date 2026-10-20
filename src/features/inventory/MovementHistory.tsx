@@ -9,6 +9,7 @@ import { messageFor } from '@/lib/errors'
 import { formatQuantity } from '@/lib/quantity'
 import type { InventoryStatus, Product } from '@/types/models'
 import { HISTORY_PAGE_SIZE, useMovementHistory, useReverseMovement, type MovementRecord } from './movementsApi'
+import { formatDateTime } from '@/lib/dates'
 
 const LABELS: Record<string, string> = {
   initial: 'Saldo inicial', purchase: 'Ingreso', consumption: 'Consumo', sale: 'Venta',
@@ -76,7 +77,7 @@ export function MovementHistory({ product, rows, isAdmin }: Props) {
               </tr></thead>
               <tbody>{history.data.rows.map((movement) => (
                 <tr key={movement.id} className="border-t border-hairline">
-                  <td className="py-3 pr-4 whitespace-nowrap">{new Date(movement.created_at).toLocaleString('es-UY')}</td>
+                  <td className="py-3 pr-4 whitespace-nowrap">{formatDateTime(movement.created_at)}</td>
                   <td className="py-3 pr-4">{branches[movement.branch_id ?? ''] ?? '—'}</td>
                   <td className="py-3 pr-4">{LABELS[movement.operation.type] ?? movement.operation.type}</td>
                   <td className="py-3 pr-4 text-right font-semibold tnum">{movement.qty_delta > 0 ? '+' : ''}{formatQuantity(Number(movement.qty_delta), product.unit)}</td>

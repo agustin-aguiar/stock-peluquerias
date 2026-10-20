@@ -36,25 +36,29 @@ export function parseQuantity(input: string, unit: UnitKind): ParseResult {
   return { ok: true, value }
 }
 
-/** "1.974,50" para ml/g; "1.200" para unidades. Sin sufijo de unidad. */
+/** "1.974,50" o "2.500" para ml/g (sin ",00" de relleno); "1.200" para unidades. Sin sufijo de unidad. */
 export function formatNumber(value: number, unit: UnitKind): string {
   const decimals = unit === 'unit' ? 0 : 2
   const fixed = Math.abs(value).toFixed(decimals)
   const [intPart, fracPart] = fixed.split('.')
   const grouped = (intPart ?? '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.')
   const sign = value < 0 ? '-' : ''
-  return fracPart ? `${sign}${grouped},${fracPart}` : `${sign}${grouped}`
+  return fracPart && /[1-9]/.test(fracPart) ? `${sign}${grouped},${fracPart}` : `${sign}${grouped}`
 }
 
 /**
  * Texto de precarga para inputs editables: siempre un valor que `parseQuantity`
  * acepta de vuelta sin transformación (round-trip seguro). Para `unit`, dígitos
  * enteros sin agrupar (evita que un punto agrupador se lea como decimal cuando
- * no hay coma). Para `ml`/`g`, igual a `formatNumber`.
+ * no hay coma). Para `ml`/`g`, siempre con coma decimal ("2.500,00"): sin ella,
+ * "2.500" se leería como 2,5.
  */
 export function formatForInput(value: number, unit: UnitKind): string {
-  if (unit !== 'unit') return formatNumber(value, unit)
   const sign = value < 0 ? '-' : ''
+  if (unit !== 'unit') {
+    const [intPart, fracPart] = Math.abs(value).toFixed(2).split('.')
+    return `${sign}${(intPart ?? '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.')},${fracPart}`
+  }
   return `${sign}${Math.trunc(Math.abs(value)).toString()}`
 }
 

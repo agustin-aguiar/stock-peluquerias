@@ -94,3 +94,12 @@ Plantilla por semana (plan §24.1). Una entrada por semana de trabajo.
 - **Implementado:** pantalla `/cierre` con todos los productos con stock del local y un campo «Usado» por fila. Se revisa un resumen y se descuenta todo de una vez como consumo interno con referencia «Cierre de turno». El encargado usa su local; el administrador elige uno. Para el encargado queda en la barra inferior del celular, en lugar de «Envíos entre locales», que sigue en «Más».
 - **Seguridad y reintentos:** reutiliza `register_movement`, sin cambios en la base. Cada fila usa su propia clave de idempotencia, de modo que reintentar después de un corte no descuenta dos veces. Si alguna fila falla, las guardadas se limpian y las fallidas quedan con su error para reintentar.
 - **Validación:** 64 pruebas unitarias, TypeScript, ESLint y compilación correctos.
+
+## Mejoras visuales — 2026-10-20
+
+- **Cantidades:** se dejan de mostrar los ",00" de relleno («2.500 ml» en lugar de «2.500,00 ml»). Los campos editables siguen precargando con coma decimal para que «2.500» no se lea como 2,5.
+- **Fechas:** formato corto («19 oct, 23:52») en pedidos, envíos, conteos, historial y enlaces.
+- **Estados:** en las listas solo se marca lo que necesita atención (queda poco, agotado, falta primera carga, inactivo, sin acceso); el detalle del producto sigue mostrando «Disponible».
+- **Navegación:** logotipo en el menú lateral y en el encabezado del celular, etiquetas cortas en la barra inferior y contador de pedidos sobre el ícono.
+- **Pantallas:** tarjetas de locales iguales en Inicio y Tablero; inventario sin columna de unidad repetida y con tarjetas que se abren con un toque; pedidos y envíos con su estado como etiqueta de color; historial agrupado por día en una lista compacta; botones de Usuarios y Sucursales alineados; barra del cierre de turno más clara.
+- **Validación:** 64 pruebas unitarias, TypeScript, ESLint y compilación correctos. Revisión con capturas de escritorio y celular usando datos simulados.

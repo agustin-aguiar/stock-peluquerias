@@ -12,7 +12,12 @@ import { useProducts } from '@/features/products/api'
 import { messageFor } from '@/lib/errors'
 import { formatQuantity, parseQuantity } from '@/lib/quantity'
 import { useTransferAction, useTransfers, type TransferView } from './api'
+import { formatDateTime } from '@/lib/dates'
+import { Chip } from '@/components/ui/Chip'
 
+const STATUS_TONE: Record<string, 'amber' | 'indigo' | 'carmine' | 'sage' | 'neutral'> = {
+  draft: 'neutral', dispatched: 'indigo', disputed: 'amber', received: 'sage', resolved: 'sage', cancelled: 'neutral',
+}
 const STATUS: Record<string, string> = {
   draft: 'Preparando envío', dispatched: 'En camino', disputed: 'Llegó una cantidad diferente',
   received: 'Recibida', resolved: 'Resuelta', cancelled: 'Cancelada',
@@ -119,8 +124,8 @@ export function TransferenciasPage() {
       const unit = row.product?.unit ?? 'unit'
       return <li key={row.id} className="rounded-lg border border-hairline bg-surface p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div><p className="label-caps text-muted">{STATUS[row.status]} · {new Date(row.created_at).toLocaleString('es-UY')}</p>
-            <h2 className="font-semibold">{row.product?.name ?? 'Producto'} <span className="text-muted">{row.product?.sku}</span></h2>
+          <div className="min-w-0"><p className="flex flex-wrap items-center gap-2 text-xs text-muted"><Chip tone={STATUS_TONE[row.status]}>{STATUS[row.status]}</Chip>{formatDateTime(row.created_at)}</p>
+            <h2 className="mt-2 font-semibold">{row.product?.name ?? 'Producto'} <span className="text-muted">{row.product?.sku}</span></h2>
             <p className="text-sm">{row.origin?.name} → {row.destination?.name} · <strong>{formatQuantity(Number(row.qty), unit)}</strong></p>
             {row.shipping_ref && <p className="text-sm text-muted">Nota del envío: {row.shipping_ref}</p>}
             {row.dispute_note && <p className="text-sm text-amber-fg">Diferencia: {row.dispute_note}</p>}

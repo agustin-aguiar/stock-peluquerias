@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { Search } from 'lucide-react'
+import { ChevronRight, Search } from 'lucide-react'
 import { useCurrentProfile } from '@/app/guards'
 import { Button } from '@/components/ui/Button'
-import { Chip } from '@/components/ui/Chip'
 import { Input } from '@/components/ui/Input'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/States'
 import { useActiveBranch } from '@/features/branches/activeBranch'
 import { useBranches } from '@/features/branches/api'
 import { messageFor } from '@/lib/errors'
-import { formatQuantity, UNIT_LABEL } from '@/lib/quantity'
+import { formatQuantity } from '@/lib/quantity'
 import type { InventoryStatus, UnitKind } from '@/types/models'
 import { COMPARE_LIMIT, PAGE_SIZE, useInventory } from './api'
 import { groupByProduct } from './group'
@@ -23,7 +22,7 @@ function Cell({ row, unit, onAssign }: { row: InventoryStatus | undefined; unit:
     <span className="flex flex-col items-end gap-1">
       <span className="font-semibold tnum">{row ? formatQuantity(Number(row.balance ?? 0), unit) : '—'}</span>
       {row && (!row.initialized_at || row.below_min) && <StatusChip row={row} />}
-      {onAssign && <button type="button" className="text-xs underline" onClick={onAssign}>Asignar</button>}
+      {onAssign && <button type="button" className="text-xs text-muted underline-offset-2 hover:text-ink hover:underline" onClick={onAssign}>Cargar</button>}
     </span>
   )
 }
@@ -86,7 +85,6 @@ export function InventarioPage() {
               <tr className="label-caps text-left text-muted">
                 <th className="py-2 pr-4">Producto</th>
                 <th className="py-2 pr-4" title="Código interno del producto">Código</th>
-                <th className="py-2 pr-4">Unidad</th>
                 <th className="py-2 pr-4 text-right">Disponible</th>
                 <th className="py-2 pr-4 text-right">Stock mínimo</th>
                 <th className="py-2">Estado</th>
@@ -102,8 +100,7 @@ export function InventarioPage() {
                     </Link>
                   </td>
                   <td className="py-3 pr-4 tnum">{r.sku}</td>
-                  <td className="py-3 pr-4">{UNIT_LABEL[(r.unit ?? 'unit') as UnitKind]}</td>
-                  <td className="py-3 pr-4 text-right font-semibold tnum">{formatQuantity(Number(r.balance ?? 0), (r.unit ?? 'unit') as UnitKind)}</td>
+                  <td className="py-3 pr-4 text-right text-base font-semibold tnum">{formatQuantity(Number(r.balance ?? 0), (r.unit ?? 'unit') as UnitKind)}</td>
                   <td className="py-3 pr-4 text-right tnum">{formatQuantity(Number(r.min_qty ?? 0), (r.unit ?? 'unit') as UnitKind)}</td>
                   <td className="py-3">
                     <StatusChip row={r} />
@@ -115,21 +112,21 @@ export function InventarioPage() {
           </table>
           <ul className="flex flex-col gap-3 md:hidden">
             {rows.map((r) => (
-              <li key={r.id} className="rounded-lg border border-hairline bg-surface p-4">
+              <li key={r.id} className="relative rounded-lg border border-hairline bg-surface p-4 has-[a:hover]:bg-canvas">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="label-caps text-muted tnum">{r.sku}</p>
-                    <Link to={`/inventario/${r.product_id}`} className="font-semibold">
+                    <Link to={`/inventario/${r.product_id}`} className="font-semibold after:absolute after:inset-0 after:content-['']">
                       {r.product_name}
                     </Link>
                   </div>
-                  <StatusChip row={r} />
+                  <span className="flex items-center gap-1"><StatusChip row={r} /><ChevronRight size={18} className="text-muted" aria-hidden /></span>
                 </div>
                 <p className="mt-2 text-sm tnum">
-                  <span className="font-semibold">{formatQuantity(Number(r.balance ?? 0), (r.unit ?? 'unit') as UnitKind)}</span>
+                  <span className="text-lg font-bold">{formatQuantity(Number(r.balance ?? 0), (r.unit ?? 'unit') as UnitKind)}</span>
                   <span className="text-muted"> · mínimo {formatQuantity(Number(r.min_qty ?? 0), (r.unit ?? 'unit') as UnitKind)}</span>
                 </p>
-                {isAdmin && <Button variant="secondary" className="mt-3 w-full" onClick={() => setAssignment({ branchId: r.branch_id ?? undefined, productId: r.product_id ?? undefined })}>Asignar stock</Button>}
+                {isAdmin && <Button variant="secondary" className="relative z-[1] mt-3 w-full" onClick={() => setAssignment({ branchId: r.branch_id ?? undefined, productId: r.product_id ?? undefined })}>Asignar stock</Button>}
               </li>
             ))}
           </ul>
@@ -155,7 +152,6 @@ export function InventarioPage() {
             <thead>
               <tr className="label-caps text-left text-muted">
                 <th className="py-2 pr-4">Producto</th>
-                <th className="py-2 pr-4">Unidad</th>
                 {activeBranches.map((b) => (
                   <th key={b.id} className="py-2 pr-4 text-right">
                     {b.name}
@@ -171,9 +167,6 @@ export function InventarioPage() {
                       {g.name}
                     </Link>
                     <span className="block text-xs text-muted tnum">{g.sku}</span>
-                  </td>
-                  <td className="py-3 pr-4">
-                    <Chip>{UNIT_LABEL[g.unit]}</Chip>
                   </td>
                   {activeBranches.map((b) => (
                     <td key={b.id} className="py-3 pr-4 text-right">
